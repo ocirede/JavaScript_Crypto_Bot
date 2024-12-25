@@ -1,0 +1,4 @@
+node_modules
+.env
+strategyTrading/tradingState.js
+chart/resetButton.js
