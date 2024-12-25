@@ -344,7 +344,7 @@ function setupRealTimeUpdates() {
       updateQueue.push({
         x: currentDate,
         y: newPrice,
-        text: `${newPrice.toFixed(2)}`, // Fixed the syntax
+        text: `${newPrice.toFixed(2)}`, 
       });
 
       // Process the queue if not already processing
