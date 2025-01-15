@@ -1,5 +1,5 @@
   // Kalman Filter for cryptocurrency trend estimation
-  export function kalmanFilter(prices, processNoise = 1e-5, measurementNoise = 1) {
+  export function kalmanFilter(prices, processNoise = 1e-3, measurementNoise = 0.5) {
     const n = prices.length;
 
     // Initialize the Kalman Filter parameters
@@ -8,7 +8,7 @@
     let trend = 0; // initial trend estimate
 
     // Array to store the smoothed trend estimates
-    const filteredPrices = [];
+    const filteredPrices = [prices[0]]; 
 
     // Apply the Kalman filter iteratively
     for (let i = 1; i < n; i++) {
@@ -28,8 +28,9 @@
       filteredPrices.push(estimate);
 
       // Update the trend (adjust based on the difference)
-      trend = (prices[i] - estimate) * 0.1; // Adjust trend based on the price change
+      trend = trend + 0.1 * kalmanGain * (prices[i] - predictedEstimate);
     }
 
-    return filteredPrices;
+    return filteredPrices.reverse();
+
   }

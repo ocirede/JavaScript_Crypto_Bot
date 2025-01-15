@@ -11,6 +11,6 @@ export function calculateEMA(data, period) {
       ema.push(alpha * value + (1 - alpha) * ema[index - 1]);
     }
   });
+
   return ema.reverse();
 }
-

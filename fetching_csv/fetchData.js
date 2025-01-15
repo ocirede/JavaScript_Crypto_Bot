@@ -1,4 +1,4 @@
-import ccxt from 'ccxt';
+import ccxt from "ccxt";
 import fs from "fs";
 import { calculate30mIndicators } from "../indicators/calculateIndicators30m.js";
 import { isTrading } from "../strategyTrading/tradingState.js";
@@ -23,14 +23,13 @@ const monthsAgo = new Date(now.setMonth(now.getMonth() - 4));
 const since = exchange.parse8601(monthsAgo.toISOString());
 const filePath = `ohlcv_${symbol}_${timeframe30m}.csv`;
 const filePath4h = `ohlcv_${symbol}_${timeframe4h}.csv`;
-const fourHoursInDay = 24 / 4; 
+const fourHoursInDay = 24 / 4;
 const currentDate = new Date();
-const currentDay = currentDate.getDay(); 
+const currentDay = currentDate.getDay();
 const daysToSubtract = (currentDay + 6) % 7;
 const partialWeekCandles = daysToSubtract * fourHoursInDay;
-const twoWeeksCandles = 84; 
+const twoWeeksCandles = 84;
 const totalCandlesToFetch = twoWeeksCandles + partialWeekCandles;
-
 
 export async function webSocketOrderBookFetch() {
   const orderbook = await exchange.fetchOrderBook(symbol);
@@ -158,7 +157,7 @@ export async function loadHistoricalDataForStrategy() {
   }
 }
 
-function convertToArrayOfArrays(ohlcv, type) {
+export function convertToArrayOfArrays(ohlcv, type) {
   const arrayOfArrays = ohlcv.map((candle) => [
     candle.timestamp,
     candle.open,
@@ -168,22 +167,24 @@ function convertToArrayOfArrays(ohlcv, type) {
     candle.volume,
   ]);
 
-  const reversedArray = arrayOfArrays.slice().reverse()
+
+  const reversedArray = arrayOfArrays.slice().reverse();
+
   let indicators;
 
   if (type === "30m") {
     indicators = calculate30mIndicators({
-      reversedArray
+      arrayOfArrays: reversedArray, 
     });
   } else if (type === "4h") {
     indicators = calculate4hIndicators({
-      reversedArray
+      arrayOfArrays: reversedArray,
     });
   }
 
-
   return { ...indicators };
 }
+
 
 export async function fetchDataForStrategy() {
   const fetchInterval = 900000;

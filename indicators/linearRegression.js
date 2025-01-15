@@ -27,7 +27,7 @@ function linearRegressionSlope(iCloses) {
     slope,
     intercept,
     standardError,
-    bestFitLine
+    bestFitLine,
   };
 }
 
@@ -69,7 +69,7 @@ function fitTrendlinesSingle(data) {
 }
 
 // Function to optimize the slope for a trendline
- function optimizeSlope(isSupport, pivot, initSlope, y) {
+function optimizeSlope(isSupport, pivot, initSlope, y) {
   const slopeUnit = (Math.max(...y) - Math.min(...y)) / y.length;
 
   let optStep = 1.0;
@@ -123,7 +123,7 @@ function fitTrendlinesSingle(data) {
 // Function to fit trendlines using high, low, and close arrays
 function fitTrendlinesHighLow(high, low, close) {
   const x = Array.from({ length: close.length }, (_, i) => i);
-  const coefs = linearRegressionSlope(close, x); // Replace with your linear regression
+  const coefs = linearRegressionSlope(close, x);
   const linePoints = x.map((i) => coefs.slope * i + coefs.intercept);
 
   const upperPivot = high
@@ -136,7 +136,14 @@ function fitTrendlinesHighLow(high, low, close) {
   const supportCoefs = optimizeSlope(true, lowerPivot, coefs.slope, low);
   const resistCoefs = optimizeSlope(false, upperPivot, coefs.slope, high);
 
-  return { supportCoefs, resistCoefs };
+  const supportLine = close.map(
+    (_, i) => supportCoefs.slope * i + supportCoefs.intercept
+  );
+  const resistLine = close.map(
+    (_, i) => resistCoefs.slope * i + resistCoefs.intercept
+  );
+
+  return { supportLine, resistLine };
 }
 
 export {

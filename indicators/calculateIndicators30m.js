@@ -1,18 +1,24 @@
-import {ATR, ADX, VWAP, WEMA } from "technicalindicators";
+import { ATR, ADX, VWAP, WEMA } from "technicalindicators";
 import { calculateEMA } from "./emaCalculation.js";
 import { calculateVolumeProfile } from "./calculateVolumeProfile.js";
-import { calculateMACD } from "./macdCalculation.js";
+import { calculateThirdInstance,  calculateFourthInstance,calculateMACD } from "./macdCalculation.js";
 import { calculateBollingerBands } from "./bollingerBandsCalculation.js";
 import { kalmanFilter } from "./kalmanFilter.js";
 import { realTimePrice } from "../servers/webSocket.js";
 import { saveIndicators30mToCsv } from "../fetching_csv/saveIndicators30mToCsv.js";
 import { calculateVWAPBands } from "./calculateVMAPBands.js";
 import { getTRSpikes } from "./trueRange.js";
-import {linearRegressionSlope,checkTrendLine,fitTrendlinesHighLow,optimizeSlope,fitTrendlinesSingle} from "./linearRegression.js";
+import {
+  linearRegressionSlope,
+  checkTrendLine,
+  fitTrendlinesHighLow,
+  optimizeSlope,
+  fitTrendlinesSingle,
+} from "./linearRegression.js";
 
 // Calculate technical indicators
-export function calculate30mIndicators({ reversedArray }) {
-  const sliceOHLCV = reversedArray.slice(0, 56);
+export function calculate30mIndicators({ arrayOfArrays }) {
+  const sliceOHLCV = arrayOfArrays.slice(0, 56);
   const candlesPerSession = 14;
   const symbol = "BTC-USDT";
   const timeframe30m = "30m";
@@ -20,33 +26,46 @@ export function calculate30mIndicators({ reversedArray }) {
 
   const sessions = calculateVolumeProfile(sliceOHLCV, candlesPerSession);
 
-  const timestamp = reversedArray.map((candle) => candle[0]);
-  const open = reversedArray.map((candle) => candle[1]);
-  const high = reversedArray.map((candle) => candle[2]);
-  const low = reversedArray.map((candle) => candle[3]);
-  const close = reversedArray.map((candle) => candle[4]);
-  const volume = reversedArray.map((candle) => candle[5]);
+  const timestamp = arrayOfArrays.map((candle) => candle[0]);
+  const open = arrayOfArrays.map((candle) => candle[1]);
+  const high = arrayOfArrays.map((candle) => candle[2]);
+  const low = arrayOfArrays.map((candle) => candle[3]);
+  const close = arrayOfArrays.map((candle) => candle[4]);
+  const volume = arrayOfArrays.map((candle) => candle[5]);
   const reverseClose = [...close].reverse();
-  const bbPeriod = 14;
-  const smaPeriod = 50;
-  const ema1Period = 55;
+  const reverseHigh = [...high].reverse();
+  const reverseLow = [...low].reverse();
+  const period = 14;
+  const ema1Period = 50;
   const ema2Period = 400;
   const ema3Period = 800;
   const last = realTimePrice;
   const accumulatedLevels = [];
   const trends = [];
 
-  const atrValues = ATR.calculate({ high, low, close, period: bbPeriod });
-  const adxValues = ADX.calculate({ high, low, close, period: bbPeriod });
-  const wemaValues = WEMA.calculate({ period: bbPeriod, values: atrValues });
+  const atrValues = ATR.calculate({ high, low, close, period: period });
+  const adxValues = ADX.calculate({ high, low, close, period: period });
+  const wemaValues = WEMA.calculate({ period: period, values: atrValues });
   const vwapValues = VWAP.calculate({ high, low, close, volume });
 
   const ema1 = calculateEMA(reverseClose, ema1Period);
   const ema2 = calculateEMA(reverseClose, ema2Period);
   const ema3 = calculateEMA(reverseClose, ema3Period);
-  const macd = calculateMACD(close);
-  const bb = calculateBollingerBands(close);
-  const spikes = getTRSpikes(reversedArray);
+  const macd = calculateMACD(reverseClose);
+  const bb = calculateBollingerBands(reverseClose);
+  const spikes = getTRSpikes(arrayOfArrays);
+  const smoothedClose = kalmanFilter(reverseClose);
+  const smoothedHigh = kalmanFilter(reverseHigh);
+  const smoothedLow = kalmanFilter(reverseLow);
+  const regressionResult = linearRegressionSlope(smoothedClose);
+  const bestFitLine = regressionResult.bestFitLine;
+  const { supportLine, resistLine } = fitTrendlinesHighLow(
+    smoothedHigh,
+    smoothedLow,
+    smoothedClose
+  );
+
+  
   saveIndicators30mToCsv(
     timestamp,
     bb,
@@ -55,20 +74,12 @@ export function calculate30mIndicators({ reversedArray }) {
     ema3,
     macd,
     spikes,
+    smoothedClose,
+    bestFitLine,
+    supportLine,
+    resistLine,
     filePathIndicators30m,
     true
-  );
-
-  const smoothedClose = kalmanFilter(close);
-  const smoothedHigh = kalmanFilter(high);
-  const smoothedLow = kalmanFilter(low);
-
-  const regressionResult = linearRegressionSlope(smoothedClose);
-  const singleTrend = fitTrendlinesSingle(smoothedClose);
-  const highLowTrend = fitTrendlinesHighLow(
-    smoothedHigh,
-    smoothedLow,
-    smoothedClose
   );
 
   function analyzeTrends(nCloses, iCloses, pastLevels = [], isCurrentSession) {

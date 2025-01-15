@@ -40,8 +40,8 @@ function fetchAndUpdateChart() {
         high: unpack(mergedData, "high"),
         low: unpack(mergedData, "low"),
         close: unpack(mergedData, "close"),
-        increasing: { line: { color: "green" } },
-        decreasing: { line: { color: "red" } },
+        increasing: { line: { color: "white" } },
+        decreasing: { line: { color: "purple" } },
         type: "candlestick",
         xaxis: "x",
         yaxis: "y",
@@ -55,7 +55,7 @@ function fetchAndUpdateChart() {
         y: unpack(mergedData, "bbMiddle"),
         mode: "lines",
         name: "BB Middle",
-        line: { color: "white" },
+        line: { color: "white", width: 2 },
         visible: false,
       };
 
@@ -64,7 +64,7 @@ function fetchAndUpdateChart() {
         y: unpack(mergedData, "bbUpper"),
         mode: "lines",
         name: "BB Upper",
-        line: { color: "turquoise" },
+        line: { color: "purple", width: 2 },
         visible: false,
       };
 
@@ -73,7 +73,7 @@ function fetchAndUpdateChart() {
         y: unpack(mergedData, "bbLower"),
         mode: "lines",
         name: "BB Lower",
-        line: { color: "turquoise", dash: "dot" },
+        line: { color: "purple", width: 2 },
         visible: false,
       };
 
@@ -105,17 +105,17 @@ function fetchAndUpdateChart() {
         visible: false,
       };
 
-      const histogramData = unpack(mergedData, "histogram"); 
+      const histogramData = unpack(mergedData, "histogram");
       const macdHistogramTrace = {
         x: unpack(mergedData, "timestamp"),
         y: histogramData,
-        type: "bar", 
+        type: "bar",
         name: "MACD Histogram",
         marker: {
-          color: histogramData.map((value) => (value > 0 ? "green" : "red")), 
+          color: histogramData.map((value) => (value > 0 ? "white" : "purple")),
         },
         yaxis: "y3",
-        visible: false, 
+        visible: false,
       };
 
       const macdSignalTrace = {
@@ -123,7 +123,7 @@ function fetchAndUpdateChart() {
         y: unpack(mergedData, "signal"),
         mode: "lines",
         name: "MACD Signal",
-        line: { color: "red" },
+        line: { color: "orange" },
         yaxis: "y3",
         visible: false,
       };
@@ -148,6 +148,38 @@ function fetchAndUpdateChart() {
         visible: false,
       };
 
+      const kalman = {
+        x: unpack(mergedData, "timestamp"),
+        y: unpack(mergedData, "kalman"),
+        mode: "lines",
+        name: "Kalman",
+        line: { color: "yellow" },
+        visible: false,
+      };
+      const bestFitLine = {
+        x: unpack(mergedData, "timestamp"),
+        y: unpack(mergedData, "slope"),
+        mode: "lines",
+        name: "RegressionSlope",
+        line: { color: "white" },
+        visible: false,
+      };
+      const support = {
+        x: unpack(mergedData, "timestamp"),
+        y: unpack(mergedData, "support"),
+        mode: "lines",
+        name: "SupportLevel",
+        line: { color: "green" },
+        visible: false,
+      };
+      const resistance = {
+        x: unpack(mergedData, "timestamp"),
+        y: unpack(mergedData, "resistance"),
+        mode: "lines",
+        name: "ResistanceLevel",
+        line: { color: "red" },
+        visible: false,
+      };
       // Empty trace for real-time price updates
       const realTimeTrace = {
         x: [],
@@ -169,7 +201,7 @@ function fetchAndUpdateChart() {
         type: "bar",
         name: "Volume",
         xaxis: "x",
-        yaxis: "y2",
+        yaxis: "y3",
         marker: { color: "blue" },
         visible: false,
       };
@@ -187,6 +219,10 @@ function fetchAndUpdateChart() {
         macdSignalTrace,
         macdTrace,
         spikesTrace,
+        kalman,
+        bestFitLine,
+        support,
+        resistance,
         realTimeTrace,
         Volume,
       ];
@@ -231,19 +267,19 @@ function fetchAndUpdateChart() {
           side: "right",
           autorange: true,
         },
-        yaxis2: {
-          title: "Volume",
-          side: "left",
+        yaxis3: {
+          title: "MACD",
           overlaying: "y",
+          side: "right",
           autorange: true,
         },
 
         yaxis3: {
-          title: "MACD Histogram",
+          title: "Volume",
+          side: "left",
           overlaying: "y",
-          side: "right",
-          position: 1.1,
           autorange: true,
+          showgrid: false,
         },
 
         updatemenus: [
@@ -267,7 +303,7 @@ function fetchAndUpdateChart() {
               {
                 label: "MACD",
                 method: "restyle",
-                args: [{ visible: [true, true] }, [7, 8, 9]],
+                args: [{ visible: [true, true, true] }, [7, 8, 9]],
               },
               {
                 label: "Spikes",
@@ -275,14 +311,34 @@ function fetchAndUpdateChart() {
                 args: [{ visible: [true] }, [10]],
               },
               {
-                label: "Real-Time Price",
+                label: "Kalman",
                 method: "restyle",
                 args: [{ visible: [true] }, [11]],
               },
               {
-                label: "Volume",
+                label: "BestFitLine",
                 method: "restyle",
                 args: [{ visible: [true] }, [12]],
+              },
+              {
+                label: "Support",
+                method: "restyle",
+                args: [{ visible: [true] }, [13]],
+              },
+              {
+                label: "Resistance",
+                method: "restyle",
+                args: [{ visible: [true] }, [14]],
+              },
+              {
+                label: "Real-Time Price",
+                method: "restyle",
+                args: [{ visible: [true] }, [15]],
+              },
+              {
+                label: "Volume",
+                method: "restyle",
+                args: [{ visible: [true] }, [16]],
               },
 
               {
@@ -290,7 +346,7 @@ function fetchAndUpdateChart() {
                 method: "restyle",
                 args: [
                   { visible: [false] },
-                  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
                 ],
               },
             ],
@@ -344,7 +400,7 @@ function setupRealTimeUpdates() {
       updateQueue.push({
         x: currentDate,
         y: newPrice,
-        text: `${newPrice.toFixed(2)}`, 
+        text: `${newPrice.toFixed(2)}`,
       });
 
       // Process the queue if not already processing
@@ -393,7 +449,7 @@ function setupRealTimeUpdates() {
             y: [[latestUpdate.y]],
             text: [[latestUpdate.text]],
           },
-          [11],
+          [15],
           50,
           {
             // Pass layout parameters to ensure other traces stay visible

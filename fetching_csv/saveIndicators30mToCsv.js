@@ -10,6 +10,10 @@ export function saveIndicators30mToCsv(
   ema3,
   macd,
   spikes,
+  smoothedClose,
+  bestFitLine,
+  supportLine,
+  resistLine,
   filePathIndicators30m,
   resetFile = false
 ) {
@@ -35,6 +39,10 @@ export function saveIndicators30mToCsv(
     "signal",
     "histogram",
     "spikes",
+    "kalman",
+    "slope",
+    "support",
+    "resistance",
   ];
 
   const json2csvParser = new Parser({
@@ -70,13 +78,18 @@ export function saveIndicators30mToCsv(
         ema55: ema1?.[index] ?? null,
         ema400: ema2?.[index] ?? null,
         ema800: ema3?.[index] ?? null,
-        macd: macd.MACD?.[index] ?? null,
-        signal: macd.signal?.[index] ?? null,
-        histogram: macd.histogram?.[index] ?? null,
+        macd: macd.macdLine?.[index] ?? null,       
+        signal: macd.signalLine?.[index] ?? null,    
+        histogram: macd.histogram?.[index] ?? null,  
         spikes: spikeValue,
-      };
+        kalman: smoothedClose?.[index] ?? null,
+        slope: bestFitLine?.[index] ?? null,
+        support: supportLine?.[index] ?? null,
+        resistance: resistLine?.[index] ?? null,
+     };
+      
     })
-    .filter((entry) => entry !== null); 
+    .filter((entry) => entry !== null)
 
   // Write or append data to CSV
   if (resetFile) {
