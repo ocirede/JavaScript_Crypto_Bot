@@ -14,6 +14,7 @@ export function saveIndicators30mToCsv(
   bestFitLine,
   supportLine,
   resistLine,
+  trend,
   filePathIndicators30m,
   resetFile = false
 ) {
@@ -43,6 +44,7 @@ export function saveIndicators30mToCsv(
     "slope",
     "support",
     "resistance",
+    "trend",
   ];
 
   const json2csvParser = new Parser({
@@ -68,7 +70,8 @@ export function saveIndicators30mToCsv(
       );
       // Match the spike by timestamp
       const spikeValue = spikesMap.get(timestamp.toISOString()) ?? null;
-      
+     
+
       return {
         timestamp: timestamp.toISOString(),
         bbMiddle: bb.middle?.[index] ?? null,
@@ -86,6 +89,8 @@ export function saveIndicators30mToCsv(
         slope: bestFitLine?.[index] ?? null,
         support: supportLine?.[index] ?? null,
         resistance: resistLine?.[index] ?? null,
+        trend: trend?.[index] ?? null,
+
      };
       
     })

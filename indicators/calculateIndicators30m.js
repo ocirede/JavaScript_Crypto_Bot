@@ -1,7 +1,10 @@
 import { ATR, ADX, VWAP, WEMA } from "technicalindicators";
 import { calculateEMA } from "./emaCalculation.js";
 import { calculateVolumeProfile } from "./calculateVolumeProfile.js";
-import { calculateThirdInstance,  calculateFourthInstance,calculateMACD } from "./macdCalculation.js";
+import {
+  calculateThirdInstance,
+  calculateMACD,
+} from "./macdCalculation.js";
 import { calculateBollingerBands } from "./bollingerBandsCalculation.js";
 import { kalmanFilter } from "./kalmanFilter.js";
 import { realTimePrice } from "../servers/webSocket.js";
@@ -10,10 +13,7 @@ import { calculateVWAPBands } from "./calculateVMAPBands.js";
 import { getTRSpikes } from "./trueRange.js";
 import {
   linearRegressionSlope,
-  checkTrendLine,
   fitTrendlinesHighLow,
-  optimizeSlope,
-  fitTrendlinesSingle,
 } from "./linearRegression.js";
 
 // Calculate technical indicators
@@ -39,6 +39,8 @@ export function calculate30mIndicators({ arrayOfArrays }) {
   const ema1Period = 50;
   const ema2Period = 400;
   const ema3Period = 800;
+  const fastLength3 = 400;
+  const slowLength3 = 800;
   const last = realTimePrice;
   const accumulatedLevels = [];
   const trends = [];
@@ -52,6 +54,7 @@ export function calculate30mIndicators({ arrayOfArrays }) {
   const ema2 = calculateEMA(reverseClose, ema2Period);
   const ema3 = calculateEMA(reverseClose, ema3Period);
   const macd = calculateMACD(reverseClose);
+  const trend = calculateThirdInstance(reverseClose, fastLength3, slowLength3, 100 )
   const bb = calculateBollingerBands(reverseClose);
   const spikes = getTRSpikes(arrayOfArrays);
   const smoothedClose = kalmanFilter(reverseClose);
@@ -64,8 +67,6 @@ export function calculate30mIndicators({ arrayOfArrays }) {
     smoothedLow,
     smoothedClose
   );
-
-  
   saveIndicators30mToCsv(
     timestamp,
     bb,
@@ -78,6 +79,7 @@ export function calculate30mIndicators({ arrayOfArrays }) {
     bestFitLine,
     supportLine,
     resistLine,
+    trend,
     filePathIndicators30m,
     true
   );

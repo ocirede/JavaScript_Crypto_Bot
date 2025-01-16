@@ -87,25 +87,28 @@ function fetchAndUpdateChart() {
         visible: false,
       };
 
+      const ema400 = unpack(mergedData, "ema400");
       const ema400Trace = {
         x: unpack(mergedData, "timestamp"),
-        y: unpack(mergedData, "ema400"),
+        y: ema400,
         mode: "lines",
         name: "EMA 400",
+        line: { color: "white" },
+
+        visible: false,
+      };
+      const ema800 = unpack(mergedData, "ema800");
+      const ema800Trace = {
+        x: unpack(mergedData, "timestamp"),
+        y: ema800,
+        mode: "lines",
+        name: "EMA 800",
         line: { color: "purple" },
         visible: false,
       };
 
-      const ema800Trace = {
-        x: unpack(mergedData, "timestamp"),
-        y: unpack(mergedData, "ema800"),
-        mode: "lines",
-        name: "EMA 800",
-        line: { color: "pink" },
-        visible: false,
-      };
-
       const histogramData = unpack(mergedData, "histogram");
+      const trend = unpack(mergedData, "trend");
       const macdHistogramTrace = {
         x: unpack(mergedData, "timestamp"),
         y: histogramData,
@@ -180,6 +183,24 @@ function fetchAndUpdateChart() {
         line: { color: "red" },
         visible: false,
       };
+
+      const invertedTrend = trend.map((value) => -value);
+
+      // Trend trace (line)
+      const trendTrace = {
+        x: unpack(mergedData, "timestamp"),
+        y: invertedTrend,
+        type: "bar",
+        name: "Trend",
+        marker: {
+          color: invertedTrend.map((value) =>
+            value >= 0 ? "darkgrey" : "indigo"
+          ),
+        },
+        yaxis: "y3",
+        visible: false,
+      };
+
       // Empty trace for real-time price updates
       const realTimeTrace = {
         x: [],
@@ -223,6 +244,7 @@ function fetchAndUpdateChart() {
         bestFitLine,
         support,
         resistance,
+        trendTrace,
         realTimeTrace,
         Volume,
       ];
@@ -331,14 +353,19 @@ function fetchAndUpdateChart() {
                 args: [{ visible: [true] }, [14]],
               },
               {
-                label: "Real-Time Price",
+                label: "Trend",
                 method: "restyle",
                 args: [{ visible: [true] }, [15]],
               },
               {
-                label: "Volume",
+                label: "Real-Time Price",
                 method: "restyle",
                 args: [{ visible: [true] }, [16]],
+              },
+              {
+                label: "Volume",
+                method: "restyle",
+                args: [{ visible: [true] }, [17]],
               },
 
               {
@@ -346,7 +373,7 @@ function fetchAndUpdateChart() {
                 method: "restyle",
                 args: [
                   { visible: [false] },
-                  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+                  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
                 ],
               },
             ],
@@ -449,7 +476,7 @@ function setupRealTimeUpdates() {
             y: [[latestUpdate.y]],
             text: [[latestUpdate.text]],
           },
-          [15],
+          [16],
           50,
           {
             // Pass layout parameters to ensure other traces stay visible
