@@ -107,6 +107,7 @@ function fetchAndUpdateChart() {
         visible: false,
       };
 
+      // Define Macd
       const histogramData = unpack(mergedData, "histogram");
       const trend = unpack(mergedData, "trend");
       const macdHistogramTrace = {
@@ -151,6 +152,7 @@ function fetchAndUpdateChart() {
         visible: false,
       };
 
+      // Define Kalman filter
       const kalman = {
         x: unpack(mergedData, "timestamp"),
         y: unpack(mergedData, "kalman"),
@@ -159,6 +161,8 @@ function fetchAndUpdateChart() {
         line: { color: "yellow" },
         visible: false,
       };
+
+      // Define Best trend fit line
       const bestFitLine = {
         x: unpack(mergedData, "timestamp"),
         y: unpack(mergedData, "slope"),
@@ -167,6 +171,7 @@ function fetchAndUpdateChart() {
         line: { color: "white" },
         visible: false,
       };
+      // Define dynamic support levels
       const support = {
         x: unpack(mergedData, "timestamp"),
         y: unpack(mergedData, "support"),
@@ -175,6 +180,7 @@ function fetchAndUpdateChart() {
         line: { color: "green" },
         visible: false,
       };
+      // Define dynamic resistnce levels
       const resistance = {
         x: unpack(mergedData, "timestamp"),
         y: unpack(mergedData, "resistance"),
@@ -184,6 +190,7 @@ function fetchAndUpdateChart() {
         visible: false,
       };
 
+      // Define volume trend for Macd
       const invertedTrend = trend.map((value) => -value);
 
       // Trend trace (line)
@@ -216,6 +223,7 @@ function fetchAndUpdateChart() {
         visible: false,
       };
 
+      // Define Volume
       const Volume = {
         x: unpack(mergedData, "timestamp"),
         y: unpack(mergedData, "volume"),
