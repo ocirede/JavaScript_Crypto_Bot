@@ -76,12 +76,12 @@ export function calculate30mIndicators({ arrayOfArrays }) {
     ema2,
     ema3,
     macd,
-    spikes,
     smoothedClose,
     bestFitLine,
     supportLine,
     resistLine,
     trend,
+    spikes,
     filePathIndicators30m,
     true
   );

@@ -9,12 +9,12 @@ export function saveIndicators30mToCsv(
   ema2,
   ema3,
   macd,
-  spikes,
   smoothedClose,
   bestFitLine,
   supportLine,
   resistLine,
   trend,
+  spikes,
   filePathIndicators30m,
   resetFile = false
 ) {
@@ -39,12 +39,13 @@ export function saveIndicators30mToCsv(
     "macd",
     "signal",
     "histogram",
-    "spikes",
     "kalman",
     "slope",
     "support",
     "resistance",
     "trend",
+    "spikes",
+
   ];
 
   const json2csvParser = new Parser({
@@ -84,13 +85,12 @@ export function saveIndicators30mToCsv(
         macd: macd.macdLine?.[index] ?? null,       
         signal: macd.signalLine?.[index] ?? null,    
         histogram: macd.histogram?.[index] ?? null,  
-        spikes: spikeValue,
         kalman: smoothedClose?.[index] ?? null,
         slope: bestFitLine?.[index] ?? null,
         support: supportLine?.[index] ?? null,
         resistance: resistLine?.[index] ?? null,
         trend: trend?.[index] ?? null,
-
+        spikes: spikeValue,
      };
       
     })
