@@ -65,7 +65,8 @@ export async function fetchMarketData() {
       console.log("No new data available from the exchange.");
       return null;
     }
-
+console.log(ohlcv)
+console.log(fourHoursOhlcv)
     // Save fetched data to CSV
     saveOHLCVToCSV(ohlcv, filePath, true);
     saveOHLCVToCSV(fourHoursOhlcv, filePath4h, true);
@@ -169,17 +170,16 @@ export function convertToArrayOfArrays(ohlcv, type) {
 
 
   const reversedArray = arrayOfArrays.slice().reverse();
-
   let indicators;
 
   if (type === "30m") {
-    indicators = calculate30mIndicators({
-      arrayOfArrays: reversedArray, 
-    });
+    indicators = calculate30mIndicators(
+     reversedArray, 
+    );
   } else if (type === "4h") {
-    indicators = calculate4hIndicators({
-      arrayOfArrays: reversedArray,
-    });
+    indicators = calculate4hIndicators(
+     reversedArray,
+    );
   }
 
   return { ...indicators };

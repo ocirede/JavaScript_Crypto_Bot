@@ -14,7 +14,7 @@ import {
 } from "./linearRegression.js";
 
 // Calculate technical indicators
-export function calculate30mIndicators({ arrayOfArrays }) {
+export function calculate30mIndicators(arrayOfArrays ) {
   const sliceOHLCV = arrayOfArrays.slice(0, 56);
   const candlesPerSession = 14;
   const symbol = "BTC-USDT";
@@ -111,13 +111,6 @@ export function calculate30mIndicators({ arrayOfArrays }) {
       // Create a new array that contains the current and past levels
       const currentAndPastLevels = [...accumulatedLevels];
 
-      // Analyze trends with session-specific thresholds
-      const trendAnalysis = analyzeTrends(
-        normalSessionCloses,
-        invertedSessionCloses,
-        currentAndPastLevels,
-        isCurrentSession
-      );
     } catch (error) {
       console.error(`Error processing session ${index + 1}:`, error);
     }
