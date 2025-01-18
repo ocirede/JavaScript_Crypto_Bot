@@ -478,7 +478,7 @@ function setupRealTimeUpdates() {
     const chartElement = document.getElementById("myDiv");
     const chartData = chartElement?.data;
 
-    if (!chartData || !chartData[11]) {
+    if (!chartData || !chartData[17]) {
       console.error("Real-time trace data is not available!");
       isUpdating = false;
       return;
