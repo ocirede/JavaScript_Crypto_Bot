@@ -1,10 +1,7 @@
 import { ATR, ADX, VWAP, WEMA } from "technicalindicators";
 import { calculateEMA } from "./emaCalculation.js";
 import { calculateVolumeProfile } from "./calculateVolumeProfile.js";
-import {
-  calculateThirdInstance,
-  calculateMACD,
-} from "./macdCalculation.js";
+import { calculateThirdInstance, calculateMACD } from "./macdCalculation.js";
 import { calculateBollingerBands } from "./bollingerBandsCalculation.js";
 import { kalmanFilter } from "./kalmanFilter.js";
 import { realTimePrice } from "../servers/webSocket.js";
@@ -54,7 +51,12 @@ export function calculate30mIndicators({ arrayOfArrays }) {
   const ema2 = calculateEMA(reverseClose, ema2Period);
   const ema3 = calculateEMA(reverseClose, ema3Period);
   const macd = calculateMACD(reverseClose);
-  const trend = calculateThirdInstance(reverseClose, fastLength3, slowLength3, 100 )
+  const trend = calculateThirdInstance(
+    reverseClose,
+    fastLength3,
+    slowLength3,
+    100
+  );
   const bb = calculateBollingerBands(reverseClose);
   const spikes = getTRSpikes(arrayOfArrays);
   const smoothedClose = kalmanFilter(reverseClose);
@@ -83,26 +85,6 @@ export function calculate30mIndicators({ arrayOfArrays }) {
     filePathIndicators30m,
     true
   );
-
-  function analyzeTrends(nCloses, iCloses, pastLevels = [], isCurrentSession) {
-    // const latestPrice = nCloses[0];
-    // // Reverse the levels to show the most recent first
-    // const pastSessionsLevels = pastLevels.map((level) => ({
-    //   poc: level.poc,
-    //   val: level.val,
-    //   vah: level.vah,
-    // }));
-    // let trend = "";
-    // const vwapBands = calculateVWAPBands(vwapValues);
-    // if (slope > 0) {
-    //   trend = "uptrend";
-    // } else if (slope < 0) {
-    //   trend = "downtrend";
-    // }
-    // // Add results to trends array
-    // trends.push({ trend, pastSessionsLevels });
-    // return { trends };
-  }
 
   // Computation for each session
   sessions.forEach((session, index) => {

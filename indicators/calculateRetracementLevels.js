@@ -8,13 +8,15 @@ export function calculateRetracementAndPivotPoints(
   const keyLevels = [0, 23.6, 38.2, 50, 61.8, 78.6, 100];
   const clusters = [];
   // Sort timestamps and corresponding prices
-  const data = timestamps.map((timestamp, index) => ({
-    timestamp: new Date(timestamp),
-    open: open[index],
-    high: highPrices[index],
-    low: lowPrices[index],
-    close: closePrices[index],
-  })).sort((a, b) => a.timestamp - b.timestamp);
+  const data = timestamps
+    .map((timestamp, index) => ({
+      timestamp: new Date(timestamp),
+      open: open[index],
+      high: highPrices[index],
+      low: lowPrices[index],
+      close: closePrices[index],
+    }))
+    .sort((a, b) => a.timestamp - b.timestamp);
 
   let currentWeekStart = null;
   let currentWeekEnd = null;
@@ -33,7 +35,10 @@ export function calculateRetracementAndPivotPoints(
     const weekEnd = getEndOfWeek(weekStart);
 
     // Check if we are still in the same week
-    if (currentWeekStart === null || weekStart.getTime() !== currentWeekStart.getTime()) {
+    if (
+      currentWeekStart === null ||
+      weekStart.getTime() !== currentWeekStart.getTime()
+    ) {
       // Process the previous week if it exists
       if (currentWeekHighs.length > 0) {
         processWeek(
@@ -80,16 +85,16 @@ export function calculateRetracementAndPivotPoints(
 function getStartOfWeek(date) {
   const startOfWeek = new Date(date);
   const currentDayOfWeek = startOfWeek.getDay();
-  const daysToSubtract = (currentDayOfWeek === 0) ? 6 : currentDayOfWeek - 1; 
-  startOfWeek.setHours(0, 0, 0, 0); 
-  startOfWeek.setDate(startOfWeek.getDate() - daysToSubtract); 
+  const daysToSubtract = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
+  startOfWeek.setHours(0, 0, 0, 0);
+  startOfWeek.setDate(startOfWeek.getDate() - daysToSubtract);
   return startOfWeek;
 }
 
 // Helper function to get the end of the week (Sunday 20:00)
 function getEndOfWeek(startOfWeek) {
   const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6); 
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
   endOfWeek.setHours(0, 0, 0, 0);
   return endOfWeek;
 }
@@ -130,6 +135,6 @@ function processWeek(timestamps, highs, lows, closes, keyLevels, clusters) {
       support2: parseFloat(support2.toFixed(2)),
       support3: parseFloat(support3.toFixed(2)),
     },
-    timestamps: timestamps, 
+    timestamps: timestamps,
   });
 }

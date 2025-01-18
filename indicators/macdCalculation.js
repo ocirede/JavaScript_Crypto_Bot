@@ -7,7 +7,6 @@ function calc_macd(close, fastLength, slowLength) {
   const slowMA = calculateEMA(close, slowLength);
   // Calculate MACD values by subtracting slowMA from fastMA
   const macd = fastMA.map((value, index) => value - slowMA[index]);
-  console.log(macd[0])
   return macd;
 }
 
@@ -37,7 +36,7 @@ export function calculateThirdInstance(
     const macdCurrentValue = macdCurrent[i];
     // Calculate t3 (difference between current and previous MACD, then apply sensitivity)
     const t3 = (macdCurrentValue - macdPreviousValue) * sensitivity3;
-  trend.push(t3)
+    trend.push(t3);
   }
 
   return trend;

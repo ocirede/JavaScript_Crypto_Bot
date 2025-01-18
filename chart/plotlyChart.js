@@ -53,9 +53,9 @@ function fetchAndUpdateChart() {
       const bbMiddleTrace = {
         x: unpack(mergedData, "timestamp"),
         y: unpack(mergedData, "bbMiddle"),
-        mode: "lines",
+        mode: "markers",
         name: "BB Middle",
-        line: { color: "white", width: 2 },
+        marker: { color: "white", width: 0.3 },
         visible: false,
       };
 
@@ -168,7 +168,7 @@ function fetchAndUpdateChart() {
         y: unpack(mergedData, "slope"),
         mode: "lines",
         name: "RegressionSlope",
-        line: { color: "white" },
+        line: { color: "white", width: 2 },
         visible: false,
       };
       // Define dynamic support levels
@@ -177,7 +177,7 @@ function fetchAndUpdateChart() {
         y: unpack(mergedData, "support"),
         mode: "lines",
         name: "SupportLevel",
-        line: { color: "green" },
+        line: { color: "green",  width: 2 },
         visible: false,
       };
       // Define dynamic resistnce levels
@@ -186,14 +186,12 @@ function fetchAndUpdateChart() {
         y: unpack(mergedData, "resistance"),
         mode: "lines",
         name: "ResistanceLevel",
-        line: { color: "red" },
+        line: { color: "red",  width: 2 },
         visible: false,
       };
 
       // Define volume trend for Macd
       const invertedTrend = trend.map((value) => -value);
-
-      // Trend trace (line)
       const trendTrace = {
         x: unpack(mergedData, "timestamp"),
         y: invertedTrend,
@@ -204,10 +202,23 @@ function fetchAndUpdateChart() {
             value >= 0 ? "darkgrey" : "indigo"
           ),
         },
+        opacity: 0.3,
         yaxis: "y3",
         visible: false,
       };
-
+      const trendOverlayTrace = {
+        x: unpack(mergedData, "timestamp"),
+        y: invertedTrend.map((value) => value * 1.05), 
+        type: "scatter",
+        mode: "lines",
+        name: "Trend Overlay",
+        line: {
+          color: "lime",
+          width: 2,
+        },
+        yaxis: "y3",
+        visible: false,
+      };
       // Empty trace for real-time price updates
       const realTimeTrace = {
         x: [],
@@ -253,6 +264,7 @@ function fetchAndUpdateChart() {
         support,
         resistance,
         trendTrace,
+        trendOverlayTrace,
         realTimeTrace,
         Volume,
       ];
@@ -366,14 +378,19 @@ function fetchAndUpdateChart() {
                 args: [{ visible: [true] }, [15]],
               },
               {
-                label: "Real-Time Price",
+                label: "TrendLine",
                 method: "restyle",
                 args: [{ visible: [true] }, [16]],
               },
               {
-                label: "Volume",
+                label: "Real-Time Price",
                 method: "restyle",
                 args: [{ visible: [true] }, [17]],
+              },
+              {
+                label: "Volume",
+                method: "restyle",
+                args: [{ visible: [true] }, [18]],
               },
 
               {
@@ -381,7 +398,7 @@ function fetchAndUpdateChart() {
                 method: "restyle",
                 args: [
                   { visible: [false] },
-                  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+                  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
                 ],
               },
             ],
@@ -484,7 +501,7 @@ function setupRealTimeUpdates() {
             y: [[latestUpdate.y]],
             text: [[latestUpdate.text]],
           },
-          [16],
+          [17],
           50,
           {
             // Pass layout parameters to ensure other traces stay visible

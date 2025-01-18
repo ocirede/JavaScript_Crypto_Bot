@@ -3,9 +3,9 @@
     const n = prices.length;
 
     // Initialize the Kalman Filter parameters
-    let estimate = prices[0]; // initial estimate (first price)
-    let estimateError = 1; // initial uncertainty
-    let trend = 0; // initial trend estimate
+    let estimate = prices[0]; 
+    let estimateError = 1; 
+    let trend = 0; 
 
     // Array to store the smoothed trend estimates
     const filteredPrices = [prices[0]]; 
