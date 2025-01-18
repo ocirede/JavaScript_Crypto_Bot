@@ -485,7 +485,7 @@ function setupRealTimeUpdates() {
     }
 
     // Ensure the real-time price trace (index 11) is visible
-    const isRealTimeVisible = chartData[11].visible !== false;
+    const isRealTimeVisible = chartData[17].visible !== false;
 
     // Only update the real-time price trace if it is visible
     if (isRealTimeVisible) {
