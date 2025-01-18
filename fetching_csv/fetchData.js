@@ -49,6 +49,7 @@ export async function fetchMarketData() {
       since,
       limit
     );
+
     let fourHoursOhlcv = await exchange.fetchOHLCV(
       symbol,
       timeframe4h,
@@ -65,8 +66,6 @@ export async function fetchMarketData() {
       console.log("No new data available from the exchange.");
       return null;
     }
-console.log(ohlcv)
-console.log(fourHoursOhlcv)
     // Save fetched data to CSV
     saveOHLCVToCSV(ohlcv, filePath, true);
     saveOHLCVToCSV(fourHoursOhlcv, filePath4h, true);
@@ -146,11 +145,10 @@ export async function loadHistoricalDataForStrategy() {
     }
 
     const historicalData = await loadHistoricalData(filePath, filePath4h);
-
     const { data, data4h } = historicalData;
-
     const processedData = convertToArrayOfArrays(data, "30m");
     const processedData4h = convertToArrayOfArrays(data4h, "4h");
+
     return { processedData, processedData4h };
   } catch (error) {
     console.error("Error loading historical data:", error);
