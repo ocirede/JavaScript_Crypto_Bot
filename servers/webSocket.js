@@ -43,7 +43,7 @@ function broadcastThrottledData() {
         client.send(JSON.stringify(latestData));
       }
     }
-    latestData = null; // Reset the data after broadcasting
+    latestData = null; 
   }
 }
 

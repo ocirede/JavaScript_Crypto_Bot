@@ -186,7 +186,7 @@ export function convertToArrayOfArrays(ohlcv, type) {
 
 export async function fetchDataForStrategy() {
   const fetchInterval = 900000;
-  const strategyInterval = 600000;
+  const strategyInterval = 450000;
 
   async function runStrategy() {
     if (!isTrading()) {
