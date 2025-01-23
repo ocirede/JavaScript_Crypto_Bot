@@ -20,5 +20,5 @@ export function calculate4hIndicators(arrayOfArrays ) {
     close
   );
 
-  return fibPivotsRetracement;
+  return {fibPivotsRetracement};
 }

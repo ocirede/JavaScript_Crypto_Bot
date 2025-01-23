@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { Parser } from "@json2csv/plainjs";
 
-export function saveIndicators30mToCsv(
+export function saveIndicatorsToCsv(
   timestamps,
   bb,
   ema1,
@@ -14,6 +14,7 @@ export function saveIndicators30mToCsv(
   supportLine,
   resistLine,
   trend,
+  sessionsData,
   spikes,
   filePathIndicators30m,
   resetFile = false
@@ -44,7 +45,11 @@ export function saveIndicators30mToCsv(
     "support",
     "resistance",
     "trend",
+    "pocPrice",
+    "vah",
+    "val",
     "spikes",
+
 
   ];
 
@@ -59,7 +64,7 @@ export function saveIndicators30mToCsv(
       const timestamp = new Date(ts);
       if (isNaN(timestamp.getTime())) {
         console.error(`Invalid timestamp at index ${index}: ${ts}`);
-        return null; // Skip invalid entries
+        return null;
       }
 
       // Convert spikes array to a map for efficient lookup by timestamp
@@ -72,6 +77,7 @@ export function saveIndicators30mToCsv(
       // Match the spike by timestamp
       const spikeValue = spikesMap.get(timestamp.toISOString()) ?? null;
      
+      const pocVahVal = sessionsData?.find((entry) =>entry.timestamps.includes(ts) || null)
 
       return {
         timestamp: timestamp.toISOString(),
@@ -90,7 +96,11 @@ export function saveIndicators30mToCsv(
         support: supportLine?.[index] ?? null,
         resistance: resistLine?.[index] ?? null,
         trend: trend?.[index] ?? null,
+        pocPrice: pocVahVal?.pocPrice ?? null,
+        vah: pocVahVal?.vah ?? null,
+        val: pocVahVal?.val ?? null,
         spikes: spikeValue,
+
      };
       
     })

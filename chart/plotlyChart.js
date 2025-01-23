@@ -53,9 +53,9 @@ function fetchAndUpdateChart() {
       const bbMiddleTrace = {
         x: unpack(mergedData, "timestamp"),
         y: unpack(mergedData, "bbMiddle"),
-        mode: "markers",
+        mode: "lines",
         name: "BB Middle",
-        marker: { color: "white", width: 0.3 },
+        line: { color: "white", width: 2 },
         visible: false,
       };
 
@@ -177,7 +177,7 @@ function fetchAndUpdateChart() {
         y: unpack(mergedData, "support"),
         mode: "lines",
         name: "SupportLevel",
-        line: { color: "green",  width: 2 },
+        line: { color: "green", width: 2 },
         visible: false,
       };
       // Define dynamic resistnce levels
@@ -186,7 +186,7 @@ function fetchAndUpdateChart() {
         y: unpack(mergedData, "resistance"),
         mode: "lines",
         name: "ResistanceLevel",
-        line: { color: "red",  width: 2 },
+        line: { color: "red", width: 2 },
         visible: false,
       };
 
@@ -208,7 +208,7 @@ function fetchAndUpdateChart() {
       };
       const trendOverlayTrace = {
         x: unpack(mergedData, "timestamp"),
-        y: invertedTrend.map((value) => value * 1.05), 
+        y: invertedTrend.map((value) => value * 1.05),
         type: "scatter",
         mode: "lines",
         name: "Trend Overlay",
@@ -219,6 +219,45 @@ function fetchAndUpdateChart() {
         yaxis: "y3",
         visible: false,
       };
+
+      const pocPrices = mergedData.map((data) => data.pocPrice);
+      const vahPrices = mergedData.map((data) => data.vah);
+      const valPrices = mergedData.map((data) => data.val);
+
+      // Create traces for the POC, VAH, and VAL lines
+      const pocLineTrace = {
+        x: unpack(ohlcvRows, "timestamp"), 
+        y: pocPrices,
+        type: "scatter",
+        mode: "lines",
+        name: "POC",
+        line: { color: "blue", width: 2 },
+        visible: false,
+
+      };
+
+      const vahLineTrace = {
+        x: unpack(ohlcvRows, "timestamp"),
+        y: vahPrices,
+        type: "scatter",
+        mode: "lines",
+        name: "VAH",
+        line: { color: "green", width: 2 },
+        visible: false,
+
+      };
+
+      const valLineTrace = {
+        x: unpack(ohlcvRows, "timestamp"),
+        y: valPrices,
+        type: "scatter",
+        mode: "lines",
+        name: "VAL",
+        line: { color: "red", width: 2 },
+        visible: false,
+
+      };
+
       // Empty trace for real-time price updates
       const realTimeTrace = {
         x: [],
@@ -234,17 +273,7 @@ function fetchAndUpdateChart() {
         visible: false,
       };
 
-      // Define Volume
-      const Volume = {
-        x: unpack(mergedData, "timestamp"),
-        y: unpack(mergedData, "volume"),
-        type: "bar",
-        name: "Volume",
-        xaxis: "x",
-        yaxis: "y3",
-        marker: { color: "blue" },
-        visible: false,
-      };
+     
 
       // Define the data array
       const data = [
@@ -265,8 +294,10 @@ function fetchAndUpdateChart() {
         resistance,
         trendTrace,
         trendOverlayTrace,
+        pocLineTrace,
+        vahLineTrace,
+        valLineTrace,
         realTimeTrace,
-        Volume,
       ];
 
       // Chart layout
@@ -309,6 +340,7 @@ function fetchAndUpdateChart() {
           side: "right",
           autorange: true,
         },
+        
         yaxis3: {
           title: "MACD",
           overlaying: "y",
@@ -316,13 +348,7 @@ function fetchAndUpdateChart() {
           autorange: true,
         },
 
-        yaxis3: {
-          title: "Volume",
-          side: "left",
-          overlaying: "y",
-          autorange: true,
-          showgrid: false,
-        },
+       
 
         updatemenus: [
           {
@@ -383,22 +409,26 @@ function fetchAndUpdateChart() {
                 args: [{ visible: [true] }, [16]],
               },
               {
-                label: "Real-Time Price",
+                label: "Poc-Vah-Val",
                 method: "restyle",
-                args: [{ visible: [true] }, [17]],
+                args: [{ visible: [true] }, [17, 18, 19]],
               },
               {
-                label: "Volume",
+                label: "Real-Time Price",
                 method: "restyle",
-                args: [{ visible: [true] }, [18]],
+                args: [{ visible: [true] }, [20]],
               },
+             
 
               {
                 label: "Deselect all",
                 method: "restyle",
                 args: [
                   { visible: [false] },
-                  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+                  [
+                    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+                    18, 19, 20
+                  ],
                 ],
               },
             ],
@@ -478,14 +508,14 @@ function setupRealTimeUpdates() {
     const chartElement = document.getElementById("myDiv");
     const chartData = chartElement?.data;
 
-    if (!chartData || !chartData[17]) {
+    if (!chartData || !chartData[20]) {
       console.error("Real-time trace data is not available!");
       isUpdating = false;
       return;
     }
 
     // Ensure the real-time price trace is visible
-    const isRealTimeVisible = chartData[17].visible !== false;
+    const isRealTimeVisible = chartData[20].visible !== false;
 
     // Only update the real-time price trace if it is visible
     if (isRealTimeVisible) {
@@ -501,7 +531,7 @@ function setupRealTimeUpdates() {
             y: [[latestUpdate.y]],
             text: [[latestUpdate.text]],
           },
-          [17],
+          [20],
           50,
           {
             // Pass layout parameters to ensure other traces stay visible

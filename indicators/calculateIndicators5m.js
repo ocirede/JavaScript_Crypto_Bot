@@ -1,27 +1,20 @@
 import { ATR, ADX, VWAP, WEMA } from "technicalindicators";
 import { calculateEMA } from "./emaCalculation.js";
-import { calculateVolumeProfile } from "./calculateVolumeProfile.js";
 import { calculateThirdInstance, calculateMACD } from "./macdCalculation.js";
 import { calculateBollingerBands } from "./bollingerBandsCalculation.js";
 import { kalmanFilter } from "./kalmanFilter.js";
 import { saveIndicatorsToCsv } from "../fetching_csv/saveIndicatorsToCsv.js";
-import { calculateVWAPBands } from "./calculateVMAPBands.js";
 import { getTRSpikes } from "./trueRange.js";
 import {
   linearRegressionSlope,
   fitTrendlinesHighLow,
 } from "./linearRegression.js";
 
-// Calculate technical indicators
-export function calculate30mIndicators(arrayOfArrays ) {
-  const sliceOHLCV = arrayOfArrays.slice(0, 56);
-  const candlesPerSession = 14;
+export function calculateIndicators5m(arrayOfArrays) {
   const symbol = "BTC-USDT";
-  const timeframe30m = "30m";
-  const filePathIndicators30m = `indicators_${symbol}_${timeframe30m}.csv`;
+  const timeframe5m = "5m";
+  const filePathIndicators5m = `indicators_${symbol}_${timeframe5m}.csv`;
 
-  const sessionsData = calculateVolumeProfile(sliceOHLCV, candlesPerSession);
-  
   const timestamp = arrayOfArrays.map((candle) => candle[0]);
   const open = arrayOfArrays.map((candle) => candle[1]);
   const high = arrayOfArrays.map((candle) => candle[2]);
@@ -65,6 +58,8 @@ export function calculate30mIndicators(arrayOfArrays ) {
     smoothedLow,
     smoothedClose
   );
+
+  const sessionsData = null;
   saveIndicatorsToCsv(
     timestamp,
     bb,
@@ -79,28 +74,11 @@ export function calculate30mIndicators(arrayOfArrays ) {
     trend,
     sessionsData,
     spikes,
-    filePathIndicators30m,
+    filePathIndicators5m,
     true
   );
-  
+
   return {
-    openCandle: open[0],
-    closeCandle: close[0],
-    highCandle: high[0],
-    lowCandle: low[0],
-    volume: volume[0],
-    previousOpenCandle: open[1],
-    previousCloseCandle: close[1],
-    previousHighCandle: high[1],
-    previousLowCandle: low[1],
-    previousVolume: volume[1],
-    latestVWAP: vwapValues[0],
-    latestATR: atrValues[0],
-    latestADX: adxValues[0],
-    latestBB: bb[0],
-    ema1,
-    ema2,
-    ema3,
-    sessionsData,
+    macd: macd
   };
 }

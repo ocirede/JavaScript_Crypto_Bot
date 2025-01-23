@@ -1,9 +1,9 @@
 import fs from "fs";
 import csv from "csv-parser";
 
-export function loadHistoricalData(filePath, filePath4h) {
+export function loadHistoricalData(filePath, filePath4h, filePath5m) {
   return new Promise((resolve, reject) => {
-    // Load the file content
+    // Function to load file content
     const loadFile = (filePath) => {
       return new Promise((resolve, reject) => {
         const data = [];
@@ -17,13 +17,24 @@ export function loadHistoricalData(filePath, filePath4h) {
         fs.createReadStream(filePath, { encoding: "utf8" })
           .pipe(csv())
           .on("headers", (headers) => {
-            const expectedHeaders = ["timestamp", "open", "high", "low", "close", "volume"];
-            const isHeaderValid = expectedHeaders.every((header) => headers.includes(header));
+            const expectedHeaders = [
+              "timestamp",
+              "open",
+              "high",
+              "low",
+              "close",
+              "volume",
+            ];
+            const isHeaderValid = expectedHeaders.every((header) =>
+              headers.includes(header)
+            );
 
             if (!isHeaderValid) {
               console.error("Invalid headers in CSV file:", headers);
               this.destroy(); // Stop reading further
-              return reject(new Error(`CSV file has invalid headers: ${headers.join(", ")}`));
+              return reject(
+                new Error(`CSV file has invalid headers: ${headers.join(", ")}`)
+              );
             }
           })
           .on("data", (row) => {
@@ -45,7 +56,9 @@ export function loadHistoricalData(filePath, filePath4h) {
               const date = new Date(cleanedTimestamp);
 
               if (isNaN(date.getTime())) {
-                console.error(`Invalid timestamp, skipping row: ${cleanedTimestamp}`);
+                console.error(
+                  `Invalid timestamp, skipping row: ${cleanedTimestamp}`
+                );
                 return;
               }
 
@@ -56,7 +69,10 @@ export function loadHistoricalData(filePath, filePath4h) {
               const volume = parseFloat(row.volume);
 
               if ([open, high, low, close, volume].some(isNaN)) {
-                console.error("Invalid numerical values in row, skipping:", row);
+                console.error(
+                  "Invalid numerical values in row, skipping:",
+                  row
+                );
                 return;
               }
 
@@ -78,10 +94,10 @@ export function loadHistoricalData(filePath, filePath4h) {
               return reject(new Error("No valid historical data loaded."));
             }
 
-            
-            console.log(`Successfully loaded ${data.length} rows from ${filePath}.`);
+            console.log(
+              `Successfully loaded ${data.length} rows from ${filePath}.`
+            );
             resolve(data);
-
           })
           .on("error", (error) => {
             console.error("Error reading file:", error);
@@ -90,11 +106,15 @@ export function loadHistoricalData(filePath, filePath4h) {
       });
     };
 
-    // Use Promise.all to load both files in parallel
-    Promise.all([loadFile(filePath), loadFile(filePath4h)])
-      .then(([data, data4h]) => {
-        // Both files are loaded successfully
-        resolve({ data, data4h });
+    // Load all three files in parallel
+    Promise.all([
+      loadFile(filePath),
+      loadFile(filePath4h),
+      loadFile(filePath5m),
+    ])
+      .then(([data, data4h, data5m]) => {
+        // All files loaded successfully
+        resolve({ data, data4h, data5m });
       })
       .catch((error) => {
         // Handle any error that occurred during loading

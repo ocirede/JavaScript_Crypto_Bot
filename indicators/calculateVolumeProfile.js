@@ -119,14 +119,10 @@ export function calculateVolumeProfile(
     }
 
     sessionProfiles.push({
+      timestamps,
       pocPrice,
       vah,
       val,
-      sessionLowestLow,
-      sessionHighestHigh,
-      closePrices,
-      timestamps,
-      bucketSize: bucketSizePercentage,
     });
   }
 
