@@ -5,6 +5,7 @@ import cors from "cors";
 import path from "path";
 import "dotenv/config";
 import { manualResetTrading } from "./strategyTrading/strategy.js";
+import { tradingStrategy } from "./strategyTrading/strategy.js";
 
 async function main() {
   console.log("Starting trading bot...");
@@ -51,6 +52,7 @@ async function main() {
 
     await fetchDataForStrategy();
     init();
+    tradingStrategy()
   } catch (error) {
     console.error("Error in main function:", error);
   }

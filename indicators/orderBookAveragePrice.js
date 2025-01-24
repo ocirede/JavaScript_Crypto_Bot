@@ -19,7 +19,7 @@ export const orderBookAveragePrice = (orderbook) => {
     const totalAskQuantity = askResults.totalQuantity;
     const averageBidPrice = bidResults.averagePrice;
     const averageAskPrice = askResults.averagePrice;
-    const spread = averageBidPrice - averageAskPrice;
+    const spread =  averageAskPrice - averageBidPrice
     return {
       totalBidQuantity: totalBidQuantity,
       averageBidPrice: averageBidPrice,

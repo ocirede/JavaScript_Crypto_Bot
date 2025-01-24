@@ -1,4 +1,2 @@
 node_modules
 .env
-strategyTrading/strategy.js
-chart/resetButton.js

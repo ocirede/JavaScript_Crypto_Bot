@@ -3,6 +3,8 @@ import zlib from "zlib";
 import "dotenv/config";
 import { webSocketOrderBookFetch } from "../fetching_csv/fetchData.js";
 import { Buffer } from "buffer";
+import chalk from "chalk";
+
 const symbol = "BTC-USDT";
 const wspath = "wss://open-api-swap.bingx.com/swap-market";
 const wsport = process.env.WS_PORT;
@@ -43,7 +45,7 @@ function broadcastThrottledData() {
         client.send(JSON.stringify(latestData));
       }
     }
-    latestData = null; 
+    latestData = null;
   }
 }
 
@@ -78,7 +80,7 @@ function onError(error) {
   console.log("WebSocket error:", error);
 }
 
-function onMessage(message) {
+async function onMessage(message) {
   const buf = Buffer.from(message);
   const decodedMsg = zlib.gunzipSync(buf).toString("utf-8");
 
@@ -92,23 +94,31 @@ function onMessage(message) {
   // Parse WebSocket message
   const parsedData = JSON.parse(decodedMsg);
 
-  const bestBid = parseFloat(parsedData?.data?.bids?.[0]?.[0]);
-  const bestAsk = parseFloat(parsedData?.data?.asks?.[0]?.[0]);
+  const bids = parsedData?.data?.bids;
+  const asks = parsedData?.data?.asks;
 
-  if (bestBid && bestAsk) {
-    realTimePrice = (bestBid + bestAsk) / 2;
-    console.log(`Calculated Real-Time Price: ${realTimePrice}`);
+  if (bids && asks) {
+    const bestBid = parseFloat(bids[0][0]);
+    const bestAsk = parseFloat(asks[0][0]); // Accessing the first ask price
 
-    // Prepare real-time price data to send to the clients
-    const realTimeData = {
-      price: realTimePrice,
-      timestamp: new Date().toISOString(),
-    };
 
-    // Update the latest data
-    onNewDataUpdate(realTimeData);
+    if (bestBid && bestAsk) {
+      realTimePrice = (bestBid + bestAsk) / 2;
+      console.log(chalk.yellow(`Calculated Real-Time Price: ${realTimePrice.toFixed(2)}`));
+
+      // Prepare real-time price data to send to the clients
+      const realTimeData = {
+        price: realTimePrice,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Update the latest data
+      onNewDataUpdate(realTimeData);
+    } else {
+      console.warn("Failed to extract bid/ask data for price calculation.");
+    }
   } else {
-    console.warn("Failed to extract bid/ask data for price calculation.");
+    console.warn("No bids or asks data found in the message.");
   }
 
   // Throttle market data fetches to avoid too frequent calls
@@ -116,8 +126,15 @@ function onMessage(message) {
 
   // Fetch data based on the fetch interval
   if (currentTime - lastFetchTime >= fetchInterval) {
-    webSocketOrderBookFetch();
-    lastFetchTime = currentTime;
+    try {
+      // Fetch orderbook and spread data
+      const { orderbook, bidAskSpread } = await webSocketOrderBookFetch();
+
+      // Update the last fetch time
+      lastFetchTime = currentTime;
+    } catch (error) {
+      console.error("Error fetching order book or price:", error);
+    }
   } else {
     console.log("Skipping market data fetch to respect fetch interval");
   }
@@ -130,6 +147,7 @@ function onMessage(message) {
     console.log("Skipping WebSocket message processing to respect rate limit");
   }
 }
+
 
 function onClose() {
   console.log("WebSocket closed");

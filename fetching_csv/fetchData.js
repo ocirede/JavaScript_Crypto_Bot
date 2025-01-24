@@ -2,7 +2,6 @@ import ccxt from "ccxt";
 import fs from "fs";
 import { calculate30mIndicators } from "../indicators/calculateIndicators30m.js";
 import { isTrading } from "../strategyTrading/tradingState.js";
-import { tradingStrategy } from "../strategyTrading/strategy.js";
 import { saveOHLCVToCSV } from "./saveOHLCVToCSV.js";
 import { loadHistoricalData } from "./loadHistoricalData.js";
 import { orderBookAveragePrice } from "../indicators/orderBookAveragePrice.js";
@@ -152,22 +151,27 @@ export async function fetchFullOHLCV(
   return allOHLCV;
 }
 
+let cachedData = {
+  processedData: null,
+  processedData4h: null,
+  processedData5m: null,
+  lastLoaded: null, 
+};
+
 export async function loadHistoricalDataForStrategy() {
   try {
+    // Avoid loading data if it's already cached and recent
+    if (
+      cachedData.processedData &&
+      cachedData.processedData4h &&
+      cachedData.processedData5m &&
+      Date.now() - cachedData.lastLoaded < 5 * 60 * 1000 
+    ) {
+      console.log("Using cached historical data...");
+      return cachedData;
+    }
+
     console.log("Loading historical data for strategy...");
-
-    // Check if filePath5m or any other path is undefined or null
-    if (!filePath5m) {
-      throw new Error("filePath5m is undefined or null.");
-    }
-    if (!filePath30m) {
-      throw new Error("filePath30m is undefined or null.");
-    }
-    if (!filePath4h) {
-      throw new Error("filePath4h is undefined or null.");
-    }
-
-    // Check if files exist
     if (
       !fs.existsSync(filePath30m) ||
       !fs.existsSync(filePath4h) ||
@@ -177,34 +181,33 @@ export async function loadHistoricalDataForStrategy() {
       return { processedData: [], processedData4h: [], processedData5m: [] };
     }
 
-    // Log a confirmation if all files exist
-    console.log("All required CSV files exist. Proceeding to load data...");
-
-    // Load historical data
     const historicalData = await loadHistoricalData(
       filePath30m,
       filePath4h,
       filePath5m
     );
 
-    // Destructure the data
     const { data, data4h, data5m } = historicalData;
 
-   
-
-    // Process the data into arrays
     const processedData = convertToArrayOfArrays(data, "30m");
     const processedData4h = convertToArrayOfArrays(data4h, "4h");
     const processedData5m = convertToArrayOfArrays(data5m, "5m");
 
-    
+    // Cache the processed data
+    cachedData = {
+      processedData,
+      processedData4h,
+      processedData5m,
+      lastLoaded: Date.now(),
+    };
 
-    return { processedData, processedData4h, processedData5m };
+    return cachedData;
   } catch (error) {
     console.error("Error loading historical data:", error);
     return { processedData: [], processedData4h: [], processedData5m: [] };
   }
 }
+
 
 
 export function convertToArrayOfArrays(ohlcv, type) {
