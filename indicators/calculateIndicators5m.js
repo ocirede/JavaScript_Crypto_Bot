@@ -1,4 +1,3 @@
-import { ATR, ADX, VWAP, WEMA } from "technicalindicators";
 import { calculateEMA } from "./emaCalculation.js";
 import { calculateThirdInstance, calculateMACD } from "./macdCalculation.js";
 import { calculateBollingerBands } from "./bollingerBandsCalculation.js";
@@ -30,11 +29,6 @@ export function calculateIndicators5m(arrayOfArrays) {
   const ema3Period = 800;
   const fastLength3 = 400;
   const slowLength3 = 800;
-
-  const atrValues = ATR.calculate({ high, low, close, period: period });
-  const adxValues = ADX.calculate({ high, low, close, period: period });
-  const wemaValues = WEMA.calculate({ period: period, values: atrValues });
-  const vwapValues = VWAP.calculate({ high, low, close, volume });
 
   const ema1 = calculateEMA(reverseClose, ema1Period);
   const ema2 = calculateEMA(reverseClose, ema2Period);

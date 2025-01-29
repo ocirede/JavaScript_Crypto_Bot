@@ -24,15 +24,31 @@ async function main() {
     app.get("/", (req, res) => {
       res.sendFile(path.join(__dirname, "index.html"));
     });
-    // Serve the CSV file
-    app.get("/ohlcv_BTC-USDT_30m.csv", (req, res) => {
-      res.sendFile(path.join(__dirname, "ohlcv_BTC-USDT_30m.csv"));
-    });
 
-    // Serve the Indicators CSV file
-    app.get("/indicators_BTC-USDT_30m.csv", (req, res) => {
-      res.sendFile(path.join(__dirname, "indicators_BTC-USDT_30m.csv"));
+    app.get("/ohlcv_BTC-USDT_:timeframe.csv", (req, res) => {
+      const { timeframe } = req.params;
+      const filePath = path.join(__dirname, `ohlcv_BTC-USDT_${timeframe}.csv`);
+      console.log(`Attempting to send file from: ${filePath}`);
+      res.sendFile(filePath, (err) => {
+        if (err) {
+          console.error(`Error sending file: ${filePath}`, err);
+          res.status(404).send("File not found.");
+        }
+      });
     });
+    
+    app.get("/indicators_BTC-USDT_:timeframe.csv", (req, res) => {
+      const { timeframe } = req.params;
+      const filePath = path.join(__dirname, `indicators_BTC-USDT_${timeframe}.csv`);
+      console.log(`Attempting to send file from: ${filePath}`);
+      res.sendFile(filePath, (err) => {
+        if (err) {
+          console.error(`Error sending file: ${filePath}`, err);
+          res.status(404).send("File not found.");
+        }
+      });
+    });
+    
 
     // Endpoint to reset trading
     app.post("/reset-trading", (req, res) => {
@@ -52,7 +68,7 @@ async function main() {
 
     await fetchDataForStrategy();
     init();
-    tradingStrategy()
+    tradingStrategy();
   } catch (error) {
     console.error("Error in main function:", error);
   }

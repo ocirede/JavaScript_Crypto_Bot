@@ -21,7 +21,7 @@ const browserWSS = new WebSocketServer({ port: wsport });
 const browserClients = new Set();
 
 let latestData = null;
-const broadcastInterval = 1000; // Interval to send data to clients (in ms)
+const broadcastInterval = 1000;
 
 // Step 2: Handle browser WebSocket connections
 browserWSS.on("connection", (ws) => {
@@ -101,10 +101,11 @@ async function onMessage(message) {
     const bestBid = parseFloat(bids[0][0]);
     const bestAsk = parseFloat(asks[0][0]); // Accessing the first ask price
 
-
     if (bestBid && bestAsk) {
       realTimePrice = (bestBid + bestAsk) / 2;
-      console.log(chalk.yellow(`Calculated Real-Time Price: ${realTimePrice.toFixed(2)}`));
+      console.log(
+        chalk.yellow(`Calculated Real-Time Price: ${realTimePrice.toFixed(2)}`)
+      );
 
       // Prepare real-time price data to send to the clients
       const realTimeData = {
@@ -148,9 +149,12 @@ async function onMessage(message) {
   }
 }
 
-
 function onClose() {
   console.log("WebSocket closed");
+  setTimeout(() => {
+    console.log("Attempting to reconnect...");
+    init();
+  }, 1000);
 }
 
 export { socket, realTimePrice };

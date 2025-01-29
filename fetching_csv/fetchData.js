@@ -10,6 +10,7 @@ import { calculateIndicators5m } from "../indicators/calculateIndicators5m.js";
 import { evaluation5mIndicators } from "../strategyTrading/evaluation5mIndicators.js";
 import { evaluation4hIndicators } from "../strategyTrading/evaluation4hIndicators.js";
 import { evaluation30mIndicators } from "../strategyTrading/evaluation30mIndicators.js";
+
 const exchange = new ccxt.bingx({
   // apiKey: process.env.TEST_API_KEY,
   // secret: process.env.SECRET_TEST_API_KEY,
@@ -208,8 +209,6 @@ export async function loadHistoricalDataForStrategy() {
   }
 }
 
-
-
 export function convertToArrayOfArrays(ohlcv, type) {
   const arrayOfArrays = ohlcv.map((candle) => [
     candle.timestamp,
@@ -239,9 +238,7 @@ export async function fetchDataForStrategy() {
   const fetchInterval4h = 3600000;
   const fetchInterval30m = 900000;
   const fetchInterval5m = 300000;
-  const strategyInterval4h = 3600000;
-  const strategyInterval30m = 900000;
-  const strategyInterval5m = 300000;
+
 
   // Function to handle strategy execution for different intervals
   async function runStrategy(interval) {
@@ -281,11 +278,11 @@ export async function fetchDataForStrategy() {
       // Dynamically set the strategy interval for the next execution
       let strategyInterval;
       if (interval === "4h") {
-        strategyInterval = strategyInterval4h;
+        strategyInterval = fetchInterval4h;
       } else if (interval === "30m") {
-        strategyInterval = strategyInterval30m;
+        strategyInterval = fetchInterval30m;
       } else if (interval === "5m") {
-        strategyInterval = strategyInterval5m;
+        strategyInterval = fetchInterval5m;
       }
 
       // Schedule the next execution

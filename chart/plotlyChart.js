@@ -1,8 +1,8 @@
 // Function to fetch and update the chart
-function fetchAndUpdateChart() {
+function fetchAndUpdateChart(timeframe = "30m") {
   Promise.all([
-    d3.csv("/ohlcv_BTC-USDT_30m.csv"),
-    d3.csv("/indicators_BTC-USDT_30m.csv"),
+    d3.csv(`/ohlcv_BTC-USDT_${timeframe}.csv`),
+    d3.csv(`/indicators_BTC-USDT_${timeframe}.csv`)
   ])
     .then(([ohlcvRows, indicatorsRows]) => {
       // Helper function to unpack columns
@@ -555,7 +555,15 @@ function setupRealTimeUpdates() {
       isUpdating = false;
     }
   }
-}
+};
+
+// Event listeners for timeframe buttons
+document.getElementById("btn-5m").addEventListener("click", () => {
+  fetchAndUpdateChart("5m");
+});
+document.getElementById("btn-30m").addEventListener("click", () => {
+  fetchAndUpdateChart("30m");
+});
 
 // Fetch data and update chart initially
 fetchAndUpdateChart();

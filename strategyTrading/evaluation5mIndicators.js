@@ -1,4 +1,3 @@
-
-export  function evaluation5mIndicators(data5m) {
-  const {macd} = data5m
-}
+export  function evaluation5mIndicators(data30m) {
+    const {ema1} =  data30m
+  }

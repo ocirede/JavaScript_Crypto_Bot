@@ -24,17 +24,48 @@
   >
     <div id="myDiv" style="width: 95vw; height: 95vh"></div>
     <button
-      id="resetButton"
+      id="btn-5m"
       style="
-      position: fixed;
-      top: 25px;
-      right: 330px;
+        position: fixed;
+        top: 25px;
+        right: 500px;
         background: turquoise;
         height: 40px;
-        width: 70px;
-        padding: 3px;
+        width: 75px;
+        padding: 5px;
         cursor: pointer;
-        "
+      "
+    >
+      5m Timeframe
+    </button>
+    <button
+      id="btn-30m"
+      style="
+        position: fixed;
+        top: 25px;
+        right: 420px;
+        background: turquoise;
+        height: 40px;
+        width: 75px;
+        padding: 5px;
+        cursor: pointer;
+      "
+    >
+      30m Timeframe
+    </button>
+
+    <button
+      id="resetButton"
+      style="
+        position: fixed;
+        top: 25px;
+        right: 340px;
+        background: turquoise;
+        height: 40px;
+        width: 75px;
+        padding: 5px;
+        cursor: pointer;
+      "
     >
       Reset Trading
     </button>
@@ -43,5 +74,5 @@
     <script>
       window.env = { WEBSOCKET_URL: "ws://localhost:3001" };
     </script>
-      </body>
+  </body>
 </html>
