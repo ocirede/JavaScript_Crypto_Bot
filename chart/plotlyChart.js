@@ -2,7 +2,7 @@
 function fetchAndUpdateChart(timeframe = "30m") {
   Promise.all([
     d3.csv(`/ohlcv_BTC-USDT_${timeframe}.csv`),
-    d3.csv(`/indicators_BTC-USDT_${timeframe}.csv`)
+    d3.csv(`/indicators_BTC-USDT_${timeframe}.csv`),
   ])
     .then(([ohlcvRows, indicatorsRows]) => {
       // Helper function to unpack columns
@@ -226,14 +226,13 @@ function fetchAndUpdateChart(timeframe = "30m") {
 
       // Create traces for the POC, VAH, and VAL lines
       const pocLineTrace = {
-        x: unpack(ohlcvRows, "timestamp"), 
+        x: unpack(ohlcvRows, "timestamp"),
         y: pocPrices,
         type: "scatter",
         mode: "lines",
         name: "POC",
         line: { color: "blue", width: 2 },
         visible: false,
-
       };
 
       const vahLineTrace = {
@@ -244,7 +243,6 @@ function fetchAndUpdateChart(timeframe = "30m") {
         name: "VAH",
         line: { color: "green", width: 2 },
         visible: false,
-
       };
 
       const valLineTrace = {
@@ -255,7 +253,6 @@ function fetchAndUpdateChart(timeframe = "30m") {
         name: "VAL",
         line: { color: "red", width: 2 },
         visible: false,
-
       };
 
       // Empty trace for real-time price updates
@@ -272,8 +269,6 @@ function fetchAndUpdateChart(timeframe = "30m") {
         },
         visible: false,
       };
-
-     
 
       // Define the data array
       const data = [
@@ -308,6 +303,22 @@ function fetchAndUpdateChart(timeframe = "30m") {
         showlegend: false,
         paper_bgcolor: "black",
         plot_bgcolor: "black",
+        margin: { l: 30, r: 40, t: 30, b: 40 },
+        shapes: [
+          {
+            type: "rect",
+            x0: 0,
+            x1: 1,
+            y0: 0,
+            y1: 1,
+            xref: "paper",
+            yref: "paper",
+            line: {
+              color: "white",
+              width: 2,
+            },
+          },
+        ],
         xaxis: {
           autorange: true,
           range: [fourMonthsAgoISO, todayISO],
@@ -340,15 +351,13 @@ function fetchAndUpdateChart(timeframe = "30m") {
           side: "right",
           autorange: true,
         },
-        
+
         yaxis3: {
           title: "MACD",
           overlaying: "y",
-          side: "right",
+          side: "left",
           autorange: true,
         },
-
-       
 
         updatemenus: [
           {
@@ -357,68 +366,80 @@ function fetchAndUpdateChart(timeframe = "30m") {
                 label: "Candlestick",
                 method: "restyle",
                 args: [{ visible: [true] }, [0]],
+                args2: [{ visible: [false] }, [0]],
               },
               {
                 label: "Bollinger Bands",
                 method: "restyle",
                 args: [{ visible: [true, true, true] }, [1, 2, 3]],
+                args2: [{ visible: [false, false, false] }, [1, 2, 3]],
               },
               {
                 label: "EMA",
                 method: "restyle",
                 args: [{ visible: [true, true, true] }, [4, 5, 6]],
+                args2: [{ visible: [false, false, false] }, [4, 5, 6]],
               },
               {
                 label: "MACD",
                 method: "restyle",
                 args: [{ visible: [true, true, true] }, [7, 8, 9]],
+                args2: [{ visible: [false, false, false] }, [7, 8, 9]],
               },
               {
                 label: "Spikes",
                 method: "restyle",
                 args: [{ visible: [true] }, [10]],
+                args2: [{ visible: [false] }, [10]],
               },
               {
                 label: "Kalman",
                 method: "restyle",
                 args: [{ visible: [true] }, [11]],
+                args2: [{ visible: [false] }, [11]],
               },
               {
                 label: "BestFitLine",
                 method: "restyle",
                 args: [{ visible: [true] }, [12]],
+                args2: [{ visible: [false] }, [12]],
               },
               {
                 label: "Support",
                 method: "restyle",
                 args: [{ visible: [true] }, [13]],
+                args2: [{ visible: [false] }, [13]],
               },
               {
                 label: "Resistance",
                 method: "restyle",
                 args: [{ visible: [true] }, [14]],
+                args2: [{ visible: [false] }, [14]],
               },
               {
                 label: "Trend",
                 method: "restyle",
                 args: [{ visible: [true] }, [15]],
+                args2: [{ visible: [false] }, [15]],
               },
               {
                 label: "TrendLine",
                 method: "restyle",
                 args: [{ visible: [true] }, [16]],
+                args2: [{ visible: [false] }, [16]],
               },
               {
                 label: "Poc-Vah-Val",
                 method: "restyle",
-                args: [{ visible: [true] }, [17, 18, 19]],
+                args: [{ visible: [true, true, true] }, [17, 18, 19]],
+                args2: [{ visible: [false, false, false] }, [17, 18, 19]],
               },
               {
                 label: "Real-Time Price",
                 method: "restyle",
                 args: [{ visible: [true] }, [20]],
+                args2: [{ visible: [false] }, [20]],
               },
-             
 
               {
                 label: "Deselect all",
@@ -427,7 +448,7 @@ function fetchAndUpdateChart(timeframe = "30m") {
                   { visible: [false] },
                   [
                     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
-                    18, 19, 20
+                    18, 19, 20,
                   ],
                 ],
               },
@@ -555,15 +576,26 @@ function setupRealTimeUpdates() {
       isUpdating = false;
     }
   }
-};
+}
 
-// Event listeners for timeframe buttons
-document.getElementById("btn-5m").addEventListener("click", () => {
-  fetchAndUpdateChart("5m");
+// Select all timeframe buttons
+const buttons = document.querySelectorAll("button[id^='btn-']");
+
+// Function to reset all button colors
+function resetButtonColors() {
+  buttons.forEach((btn) => (btn.style.background = "turquoise"));
+}
+
+// Add event listeners to each button
+buttons.forEach((button) => {
+  button.addEventListener("click", (event) => {
+    resetButtonColors();
+    event.target.style.background = "blue";
+    fetchAndUpdateChart(event.target.innerText.split(" ")[0]);
+  });
 });
-document.getElementById("btn-30m").addEventListener("click", () => {
-  fetchAndUpdateChart("30m");
-});
+
+
 
 // Fetch data and update chart initially
 fetchAndUpdateChart();

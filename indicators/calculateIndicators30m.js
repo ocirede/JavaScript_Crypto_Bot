@@ -13,7 +13,7 @@ import {
 } from "./linearRegression.js";
 
 // Calculate technical indicators
-export function calculate30mIndicators(arrayOfArrays, timeframe ) {
+export function calculate30mIndicators(arrayOfArrays ) {
   const sliceOHLCV = arrayOfArrays.slice(0, 56);
   const candlesPerSession = 14;
   const symbol = "BTC-USDT";

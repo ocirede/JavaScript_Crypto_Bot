@@ -22,6 +22,7 @@ const timeframe4h = "4h";
 const timeframe30m = "30m";
 const timeframe5m = "5m";
 const limit = 1000;
+const limit4h = 500
 const now = new Date();
 const monthsAgo = new Date(now.setMonth(now.getMonth() - 4));
 const since = exchange.parse8601(monthsAgo.toISOString());
@@ -33,7 +34,7 @@ const currentDate = new Date();
 const currentDay = currentDate.getDay();
 const daysToSubtract = (currentDay + 6) % 7;
 const partialWeekCandles = daysToSubtract * sixHoursInDay;
-const twoWeeksCandles = 84;
+const twoWeeksCandles = 168;
 const totalCandlesToFetch = twoWeeksCandles + partialWeekCandles;
 
 export async function webSocketOrderBookFetch() {
@@ -59,14 +60,14 @@ export async function fetchMarketData() {
       symbol,
       timeframe4h,
       undefined,
-      totalCandlesToFetch
+      limit4h
     );
 
     let fiveMinuteOhlcv = await exchange.fetchOHLCV(
       symbol,
       timeframe5m,
       undefined,
-      totalCandlesToFetch
+      limit
     );
 
     if (

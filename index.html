@@ -22,24 +22,9 @@
       background-color: black;
     "
   >
-    <div id="myDiv" style="width: 95vw; height: 95vh"></div>
+    <div id="myDiv" style="width: 95vw; height: 95vh">
     <button
-      id="btn-5m"
-      style="
-        position: fixed;
-        top: 25px;
-        right: 500px;
-        background: turquoise;
-        height: 40px;
-        width: 75px;
-        padding: 5px;
-        cursor: pointer;
-      "
-    >
-      5m Timeframe
-    </button>
-    <button
-      id="btn-30m"
+      id="btn-4h"
       style="
         position: fixed;
         top: 25px;
@@ -51,7 +36,37 @@
         cursor: pointer;
       "
     >
+      4h Timeframe
+    </button>
+    <button
+      id="btn-30m"
+      style="
+        position: fixed;
+        top: 25px;
+        right: 500px;
+        background: turquoise;
+        height: 40px;
+        width: 75px;
+        padding: 5px;
+        cursor: pointer;
+      "
+    >
       30m Timeframe
+    </button>
+    <button
+      id="btn-5m"
+      style="
+        position: fixed;
+        top: 25px;
+        right: 580px;
+        background: turquoise;
+        height: 40px;
+        width: 75px;
+        padding: 5px;
+        cursor: pointer;
+      "
+    >
+      5m Timeframe
     </button>
 
     <button
@@ -69,6 +84,7 @@
     >
       Reset Trading
     </button>
+  </div>
     <script type="module" src="./chart/plotlyChart.js"></script>
     <script src="./chart/resetButton.js"></script>
     <script>
