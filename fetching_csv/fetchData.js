@@ -1,15 +1,15 @@
 import ccxt from "ccxt";
 import fs from "fs";
-import { isTrading } from "../strategyTrading/tradingState.js";
+import { isTrading } from "../strategy_evaluation_trading/tradingState.js";
 import { saveOHLCVToCSV } from "./saveOHLCVToCSV.js";
 import { loadHistoricalData } from "./loadHistoricalData.js";
 import { orderBookAveragePrice } from "../indicators/orderBookAveragePrice.js";
-import { calculateIndicators5m } from "../CalculationsDifferentTimeframes/calculate5mIndicators.js";
-import { calculate30mIndicators } from "../CalculationsDifferentTimeframes/calculate30mIndicators.js";
-import { calculate4hIndicators } from "../CalculationsDifferentTimeframes/calculate4hIndicators.js";
-import { evaluation5mIndicators } from "../strategyTrading/evaluation5mIndicators.js";
-import { evaluation30mIndicators } from "../strategyTrading/evaluation30mIndicators.js";
-import { evaluation4hIndicators } from "../strategyTrading/evaluation4hIndicators.js";
+import { calculate5mIndicators } from "../calculations_different_timeframes/calculateIndicators5m.js";
+import { calculate30mIndicators } from "../calculations_different_timeframes/calculateIndicators30m.js";
+import { calculate4hIndicators } from "../calculations_different_timeframes/calculateIndicators4h.js";
+import { evaluation5mIndicators } from "../strategy_evaluation_trading/evaluation5mIndicators.js";
+import { evaluation30mIndicators } from "../strategy_evaluation_trading/evaluation30mIndicators.js";
+import { evaluation4hIndicators } from "../strategy_evaluation_trading/evaluation4hIndicators.js";
 
 const exchange = new ccxt.bingx({
   // apiKey: process.env.TEST_API_KEY,
@@ -234,7 +234,7 @@ export function convertToArrayOfArrays(ohlcv, type) {
   } else if (type === "4h") {
     indicators = calculate4hIndicators(reversedArray);
   } else {
-    indicators = calculateIndicators5m(reversedArray);
+    indicators = calculate5mIndicators(reversedArray);
   }
 
   return { ...indicators };

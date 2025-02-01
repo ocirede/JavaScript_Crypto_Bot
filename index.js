@@ -4,8 +4,8 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import "dotenv/config";
-import { manualResetTrading } from "./strategyTrading/strategy.js";
-import { tradingStrategy } from "./strategyTrading/strategy.js";
+import { manualResetTrading } from "./strategy_evaluation_trading/strategy.js";
+import { tradingStrategy } from "./strategy_evaluation_trading/strategy.js";
 
 async function main() {
   console.log("Starting trading bot...");
