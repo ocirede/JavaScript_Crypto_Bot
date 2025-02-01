@@ -8,6 +8,7 @@ import {
   linearRegressionSlope,
   fitTrendlinesHighLow,
 } from "./linearRegression.js";
+import { calculateRetracementAndPivotPoints } from "./calculateRetracementLevels.js";
 
 export function calculateIndicators5m(arrayOfArrays) {
   const symbol = "BTC-USDT";
@@ -52,8 +53,17 @@ export function calculateIndicators5m(arrayOfArrays) {
     smoothedLow,
     smoothedClose
   );
+ // Compute Fibonacci retracement levels for the session
+   let fibPivotsRetracement = calculateRetracementAndPivotPoints(
+    timestamp,
+    open,
+    high,
+    low,
+    close
+  );
 
-  const sessionsData = null;
+
+fibPivotsRetracement = null;
   saveIndicatorsToCsv(
     timestamp,
     bb,
@@ -66,7 +76,7 @@ export function calculateIndicators5m(arrayOfArrays) {
     supportLine,
     resistLine,
     trend,
-    sessionsData,
+    fibPivotsRetracement,
     spikes,
     filePathIndicators5m,
     true

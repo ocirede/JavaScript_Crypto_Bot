@@ -14,7 +14,7 @@ export function saveIndicatorsToCsv(
   supportLine,
   resistLine,
   trend,
-  sessionsData,
+  fibPivotsRetracement,
   spikes,
   filePathIndicators30m,
   resetFile = false
@@ -77,7 +77,7 @@ export function saveIndicatorsToCsv(
       // Match the spike by timestamp
       const spikeValue = spikesMap.get(timestamp.toISOString()) ?? null;
      
-      const pocVahVal = sessionsData?.find((entry) =>entry.timestamps.includes(ts) || null)
+      //const pocVahVal = sessionsData?.find((entry) =>entry.timestamps.includes(ts) || null)
 
       return {
         timestamp: timestamp.toISOString(),
@@ -96,9 +96,9 @@ export function saveIndicatorsToCsv(
         support: supportLine?.[index] ?? null,
         resistance: resistLine?.[index] ?? null,
         trend: trend?.[index] ?? null,
-        pocPrice: pocVahVal?.pocPrice ?? null,
-        vah: pocVahVal?.vah ?? null,
-        val: pocVahVal?.val ?? null,
+        // pocPrice: pocVahVal?.pocPrice ?? null,
+        // vah: pocVahVal?.vah ?? null,
+        // val: pocVahVal?.val ?? null,
         spikes: spikeValue,
 
      };

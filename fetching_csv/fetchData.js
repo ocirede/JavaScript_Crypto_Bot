@@ -14,7 +14,8 @@ import { evaluation30mIndicators } from "../strategyTrading/evaluation30mIndicat
 const exchange = new ccxt.bingx({
   // apiKey: process.env.TEST_API_KEY,
   // secret: process.env.SECRET_TEST_API_KEY,
-  //timeout: 20000,
+  timeout: 20000,
+  enableRateLimit: true,
 });
 
 const symbol = "BTC-USDT";
@@ -22,28 +23,31 @@ const timeframe4h = "4h";
 const timeframe30m = "30m";
 const timeframe5m = "5m";
 const limit = 1000;
-const limit4h = 500
+const limit4h = 500;
 const now = new Date();
 const monthsAgo = new Date(now.setMonth(now.getMonth() - 4));
 const since = exchange.parse8601(monthsAgo.toISOString());
 const filePath4h = `ohlcv_${symbol}_${timeframe4h}.csv`;
 const filePath30m = `ohlcv_${symbol}_${timeframe30m}.csv`;
 const filePath5m = `ohlcv_${symbol}_${timeframe5m}.csv`;
-const sixHoursInDay = 24 / 4;
-const currentDate = new Date();
-const currentDay = currentDate.getDay();
-const daysToSubtract = (currentDay + 6) % 7;
-const partialWeekCandles = daysToSubtract * sixHoursInDay;
-const twoWeeksCandles = 168;
-const totalCandlesToFetch = twoWeeksCandles + partialWeekCandles;
 
+
+let cachedData = {
+  processedData: null,
+  processedData4h: null,
+  processedData5m: null,
+  lastLoaded: null,
+};
+
+// Helper for WebSocket fetching data
 export async function webSocketOrderBookFetch() {
   const orderbook = await exchange.fetchOrderBook(symbol);
   const bidAskSpread = orderBookAveragePrice(orderbook);
   const realTimePrice = await exchange.fetchTicker(symbol);
   return { orderbook, bidAskSpread };
-}
+};
 
+// Main function to fetch API from BingX
 export async function fetchMarketData() {
   try {
     console.log("Fetching market data...");
@@ -91,28 +95,35 @@ export async function fetchMarketData() {
     return { ohlcv, fourHoursOhlcv, fiveMinuteOhlcv };
   } catch (error) {
     console.error("Error fetching market data:", error);
-
-    if (error instanceof ccxt.NetworkError) {
-      console.error("Network Error:", error.message);
-    } else if (error instanceof ccxt.ExchangeError) {
-      console.error("Exchange Error:", error.message);
-      if (error.message.includes("429")) {
-        console.error("Rate limit exceeded. You might be temporarily banned.");
-      } else if (error.message.includes("403")) {
-        console.error(
-          "Access forbidden. You might be banned or using an invalid API key."
-        );
-      }
-    } else if (error instanceof ccxt.BaseError) {
-      console.error("Base Error:", error.message);
-    } else {
-      console.error("Unexpected Error:", error);
-    }
-
-    return null;
+    handleCcxtErrors(error);
   }
-}
+};
 
+// Helper for handling ccxt errors
+function handleCcxtErrors() {
+  if (error instanceof ccxt.NetworkError) {
+    console.error("Network Error:", error.message);
+  } else if (error instanceof ccxt.ExchangeError) {
+    console.error("Exchange Error:", error.message);
+    if (error.message.includes("429")) {
+      console.error("Rate limit exceeded. You might be temporarily banned.");
+    } else if (error.message.includes("403")) {
+      console.error(
+        "Access forbidden. You might be banned or using an invalid API key."
+      );
+    }
+  } else if (error instanceof ccxt.BaseError) {
+    console.error("Base Error:", error.message);
+  } else if (error.message.includes("timed out")) {
+    console.error("Request Timeout: The exchange took too long to respond.");
+  } else {
+    console.error("Unexpected Error:", error);
+  }
+
+  return null;
+};
+
+// Helper to fetch 4month data on 30 minutes timeframe
 export async function fetchFullOHLCV(
   exchange,
   symbol,
@@ -151,15 +162,9 @@ export async function fetchFullOHLCV(
   }
 
   return allOHLCV;
-}
-
-let cachedData = {
-  processedData: null,
-  processedData4h: null,
-  processedData5m: null,
-  lastLoaded: null, 
 };
 
+// Helper to retrieve historicaldata from CSV files
 export async function loadHistoricalDataForStrategy() {
   try {
     // Avoid loading data if it's already cached and recent
@@ -167,7 +172,7 @@ export async function loadHistoricalDataForStrategy() {
       cachedData.processedData &&
       cachedData.processedData4h &&
       cachedData.processedData5m &&
-      Date.now() - cachedData.lastLoaded < 5 * 60 * 1000 
+      Date.now() - cachedData.lastLoaded < 5 * 60 * 1000
     ) {
       console.log("Using cached historical data...");
       return cachedData;
@@ -208,8 +213,9 @@ export async function loadHistoricalDataForStrategy() {
     console.error("Error loading historical data:", error);
     return { processedData: [], processedData4h: [], processedData5m: [] };
   }
-}
+};
 
+// Helper to convert object data into array 
 export function convertToArrayOfArrays(ohlcv, type) {
   const arrayOfArrays = ohlcv.map((candle) => [
     candle.timestamp,
@@ -232,20 +238,19 @@ export function convertToArrayOfArrays(ohlcv, type) {
   }
 
   return { ...indicators };
-}
+};
 
-// Main strategy execution function
+// Main strategy evaluation and update market functions
 export async function fetchDataForStrategy() {
-  const fetchInterval4h = 3600000;
-  const fetchInterval30m = 900000;
+  const fetchInterval4h = 10800000;
+  const fetchInterval30m = 1800000;
   const fetchInterval5m = 300000;
 
-
-  // Function to handle strategy execution for different intervals
-  async function runStrategy(interval) {
+  // Helper to handle strategy evaluation for different intervals
+  async function EvaluateStrategy(interval) {
     if (!isTrading()) {
       console.log(
-        `Trading is currently stopped. Skipping strategy execution for ${interval}`
+        `Trading is currently stopped. Skipping strategy evaluation for ${interval}`
       );
       return;
     }
@@ -287,10 +292,11 @@ export async function fetchDataForStrategy() {
       }
 
       // Schedule the next execution
-      setTimeout(() => runStrategy(interval), strategyInterval);
+      setTimeout(() => EvaluateStrategy(interval), strategyInterval);
     }
-  }
-
+  };
+  
+  // Helper to update market data
   async function runMarketUpdate(interval) {
     try {
       console.log("Updating market data...");
@@ -328,13 +334,12 @@ export async function fetchDataForStrategy() {
       // Schedule the next execution of data update
       setTimeout(() => runMarketUpdate(interval), fetchInterval);
     }
-  }
+  };
 
-  // Start fetching data and running strategies for all intervals
-  runStrategy("4h");
-  runStrategy("30m");
-  runStrategy("5m");
+  EvaluateStrategy("4h");
+  EvaluateStrategy("30m");
+  EvaluateStrategy("5m");
   runMarketUpdate("4h");
   runMarketUpdate("30m");
   runMarketUpdate("5m");
-}
+};

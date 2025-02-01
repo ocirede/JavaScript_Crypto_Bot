@@ -11,6 +11,7 @@ import {
   linearRegressionSlope,
   fitTrendlinesHighLow,
 } from "./linearRegression.js";
+import { calculateRetracementAndPivotPoints } from "./calculateRetracementLevels.js";
 
 // Calculate technical indicators
 export function calculate30mIndicators(arrayOfArrays ) {
@@ -65,6 +66,16 @@ export function calculate30mIndicators(arrayOfArrays ) {
     smoothedLow,
     smoothedClose
   );
+   // Compute Fibonacci retracement levels for the session
+   let fibPivotsRetracement = calculateRetracementAndPivotPoints(
+    timestamp,
+    open,
+    high,
+    low,
+    close
+  );
+
+  fibPivotsRetracement = null;
   saveIndicatorsToCsv(
     timestamp,
     bb,
@@ -77,7 +88,7 @@ export function calculate30mIndicators(arrayOfArrays ) {
     supportLine,
     resistLine,
     trend,
-    sessionsData,
+    fibPivotsRetracement,
     spikes,
     filePathIndicators30m,
     true

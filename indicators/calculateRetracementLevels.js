@@ -105,9 +105,14 @@ function processWeek(timestamps, highs, lows, closes, keyLevels, clusters) {
   const clusterClose = closes[0];
   const range = clusterHigh - clusterLow;
 
-  // Calculate Retracement Levels
+  // 🔍 Determine Trend Direction
+  const isUptrend = (clusterClose - clusterLow) > (clusterHigh - clusterClose);
+
+  // Adjust Retracement Calculation Based on Trend
   const retracementLevels = keyLevels.reduce((acc, level) => {
-    const retracementPrice = clusterHigh - range * (level / 100);
+    const retracementPrice = isUptrend
+      ? clusterLow + range * (level / 100) 
+      : clusterHigh - range * (level / 100); 
     acc[`${level}%`] = parseFloat(retracementPrice.toFixed(2));
     return acc;
   }, {});

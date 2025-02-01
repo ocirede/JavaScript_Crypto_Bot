@@ -1,7 +1,5 @@
 import { calculateRetracementAndPivotPoints } from "./calculateRetracementLevels.js";
-import { ATR, ADX, VWAP, WEMA } from "technicalindicators";
 import { calculateEMA } from "./emaCalculation.js";
-import { calculateVolumeProfile } from "./calculateVolumeProfile.js";
 import { calculateThirdInstance, calculateMACD } from "./macdCalculation.js";
 import { calculateBollingerBands } from "./bollingerBandsCalculation.js";
 import { kalmanFilter } from "./kalmanFilter.js";
@@ -64,7 +62,23 @@ export function calculate4hIndicators(arrayOfArrays ) {
     close
   );
 
-  const sessionsData = null;
+
+//   fibPivotsRetracement.forEach((retracementObj, index) => {
+//     console.log(`--- Object ${index + 1} ---`);
+    
+//     if (!retracementObj.retracementLevels) {
+//         console.error(`Error: retracementLevels is undefined or null in object ${index + 1}`);
+//         return;
+//     }
+    
+//     console.log("retracementLevels:", retracementObj.retracementLevels);
+
+//     Object.entries(retracementObj.retracementLevels).forEach(([level, price]) => {
+//         console.log(`${level}: ${price}`);
+//     });
+// });
+
+
   saveIndicatorsToCsv(
     timestamp,
     bb,
@@ -77,7 +91,7 @@ export function calculate4hIndicators(arrayOfArrays ) {
     supportLine,
     resistLine,
     trend,
-    sessionsData,
+    fibPivotsRetracement,
     spikes,
     filePathIndicators4h,
     true

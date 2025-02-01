@@ -83,7 +83,7 @@ function fetchAndUpdateChart(timeframe = "30m") {
         y: unpack(mergedData, "ema55"),
         mode: "lines",
         name: "EMA 55",
-        line: { color: "orange" },
+        line: { color: "green" },
         visible: false,
       };
 
