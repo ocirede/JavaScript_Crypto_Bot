@@ -16,12 +16,12 @@ export function saveIndicatorsToCsv(
   trend,
   fibPivotsRetracement,
   spikes,
-  filePathIndicators30m,
+  filePathIndicators,
   resetFile = false
 ) {
   console.log("Called Indicator csv function")
   // Ensure the directory exists
-  const dir = path.dirname(filePathIndicators30m);
+  const dir = path.dirname(filePathIndicators);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
     console.log(`Created directory: ${dir}`);
@@ -55,7 +55,7 @@ export function saveIndicatorsToCsv(
 
   const json2csvParser = new Parser({
     fields,
-    header: !fs.existsSync(filePathIndicators30m) || resetFile,
+    header: !fs.existsSync(filePathIndicators) || resetFile,
   });
 
   // Prepare data for each timestamp
@@ -110,18 +110,18 @@ export function saveIndicatorsToCsv(
   if (resetFile) {
     // Reset the file and write new data with the header
     const csvData = json2csvParser.parse(data);
-    fs.writeFileSync(filePathIndicators30m, csvData + "\n", "utf8");
+    fs.writeFileSync(filePathIndicators, csvData + "\n", "utf8");
     console.log("File reset and written with new data.");
   } else {
     // Append data to existing file without headers
     const appendParser = new Parser({ fields, header: false });
     const csvData = appendParser.parse(data); // Parse data to CSV format
 
-    if (!fs.existsSync(filePathIndicators30m)) {
+    if (!fs.existsSync(filePathIndicators)) {
       // If file doesn't exist, write header first
-      fs.writeFileSync(filePathIndicators30m, `${fields.join(",")}\n`, "utf8");
+      fs.writeFileSync(filePathIndicators, `${fields.join(",")}\n`, "utf8");
     }
 
-    fs.appendFileSync(filePathIndicators30m, csvData + "\n", "utf8");
+    fs.appendFileSync(filePathIndicators, csvData + "\n", "utf8");
   }
 }
