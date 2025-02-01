@@ -16,10 +16,6 @@ async function main() {
     // Use process.cwd() to get the current working directory
     const __dirname = process.cwd();
 
-    // Serve static files
-    app.use(express.static(path.join(__dirname, "..")));
-    app.use("/chart", express.static(path.join(__dirname, "chart")));
-
     app.use(cors());
     app.get("/", (req, res) => {
       res.sendFile(path.join(__dirname, "index.html"));
@@ -27,6 +23,9 @@ async function main() {
 
     app.get("/ohlcv_BTC-USDT_:timeframe.csv", (req, res) => {
       const { timeframe } = req.params;
+      if (!timeframe.match(/^\d+[mh]$/)) {
+        return res.status(400).send("Invalid timeframe format.");
+      }
       const filePath = path.join(__dirname, `ohlcv_BTC-USDT_${timeframe}.csv`);
       console.log(`Attempting to send file from: ${filePath}`);
       res.sendFile(filePath, (err) => {
@@ -36,10 +35,17 @@ async function main() {
         }
       });
     });
-    
+
     app.get("/indicators_BTC-USDT_:timeframe.csv", (req, res) => {
       const { timeframe } = req.params;
-      const filePath = path.join(__dirname, `indicators_BTC-USDT_${timeframe}.csv`);
+
+      if (!timeframe.match(/^\d+[mh]$/)) { 
+        return res.status(400).send("Invalid timeframe format.");
+      }
+      const filePath = path.join(
+        __dirname,
+        `indicators_BTC-USDT_${timeframe}.csv`
+      );
       console.log(`Attempting to send file from: ${filePath}`);
       res.sendFile(filePath, (err) => {
         if (err) {
@@ -48,8 +54,11 @@ async function main() {
         }
       });
     });
-    
 
+    // Serve static files
+    app.use(express.static(path.join(__dirname, "..")));
+    app.use("/chart", express.static(path.join(__dirname, "chart")));
+   
     // Endpoint to reset trading
     app.post("/reset-trading", (req, res) => {
       try {
