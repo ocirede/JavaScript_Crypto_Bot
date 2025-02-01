@@ -1,5 +1,5 @@
 import { stopTrading, resetTrading } from "./tradingState.js";
-import { realTimePrice } from "../WebSocket/webSocket.js";
+import { realTimePrice } from "../webSocket/webSocket.js";
 
 let wins = 3;
 let losses = 6;
