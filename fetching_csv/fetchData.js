@@ -1,15 +1,15 @@
 import ccxt from "ccxt";
 import fs from "fs";
-import { calculate30mIndicators } from "../indicators/calculateIndicators30m.js";
 import { isTrading } from "../strategyTrading/tradingState.js";
 import { saveOHLCVToCSV } from "./saveOHLCVToCSV.js";
 import { loadHistoricalData } from "./loadHistoricalData.js";
 import { orderBookAveragePrice } from "../indicators/orderBookAveragePrice.js";
-import { calculate4hIndicators } from "../indicators/calculateIndicators4h.js";
-import { calculateIndicators5m } from "../indicators/calculateIndicators5m.js";
+import { calculateIndicators5m } from "../CalculationsDifferentTimeframes/calculate5mIndicators.js";
+import { calculate30mIndicators } from "../CalculationsDifferentTimeframes/calculate30mIndicators.js";
+import { calculate4hIndicators } from "../CalculationsDifferentTimeframes/calculate4hIndicators.js";
 import { evaluation5mIndicators } from "../strategyTrading/evaluation5mIndicators.js";
-import { evaluation4hIndicators } from "../strategyTrading/evaluation4hIndicators.js";
 import { evaluation30mIndicators } from "../strategyTrading/evaluation30mIndicators.js";
+import { evaluation4hIndicators } from "../strategyTrading/evaluation4hIndicators.js";
 
 const exchange = new ccxt.bingx({
   // apiKey: process.env.TEST_API_KEY,

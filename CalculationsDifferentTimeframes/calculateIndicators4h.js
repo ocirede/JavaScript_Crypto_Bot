@@ -1,15 +1,15 @@
-import { calculateRetracementAndPivotPoints } from "./calculateRetracementLevels.js";
-import { calculateEMA } from "./emaCalculation.js";
-import { calculateThirdInstance, calculateMACD } from "./macdCalculation.js";
-import { calculateBollingerBands } from "./bollingerBandsCalculation.js";
-import { kalmanFilter } from "./kalmanFilter.js";
+import { calculateRetracementAndPivotPoints } from "../indicators/calculateRetracementLevels.js";
+import { calculateEMA } from "../indicators/emaCalculation.js";
+import { calculateThirdInstance, calculateMACD } from "../indicators/macdCalculation.js";
+import { calculateBollingerBands } from "../indicators/bollingerBandsCalculation.js";
+import { kalmanFilter } from "../indicators/kalmanFilter.js";
 import { saveIndicatorsToCsv } from "../fetching_csv/saveIndicatorsToCsv.js";
-import { calculateVWAPBands } from "./calculateVMAPBands.js";
-import { getTRSpikes } from "./trueRange.js";
+import { calculateVWAPBands } from "../indicators/calculateVMAPBands.js";
+import { getTRSpikes } from "../indicators/trueRange.js";
 import {
   linearRegressionSlope,
   fitTrendlinesHighLow,
-} from "./linearRegression.js";
+} from "../indicators/linearRegression.js";
 
 export function calculate4hIndicators(arrayOfArrays ) {
   const symbol = "BTC-USDT";
