@@ -1,5 +1,5 @@
 import { fetchDataForStrategy } from "./fetching_csv/fetchData.js";
-import { init } from "./servers/webSocket.js";
+import { init } from "./WebSocket/webSocket.js";
 import express from "express";
 import cors from "cors";
 import path from "path";
