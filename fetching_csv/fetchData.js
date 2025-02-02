@@ -1,5 +1,6 @@
 import ccxt from "ccxt";
 import fs from "fs";
+import "dotenv/config";
 import { isTrading } from "../strategy_evaluation_trading/tradingState.js";
 import { saveOHLCVToCSV } from "./saveOHLCVToCSV.js";
 import { loadHistoricalData } from "./loadHistoricalData.js";
@@ -12,8 +13,8 @@ import { evaluation30mIndicators } from "../strategy_evaluation_trading/evaluati
 import { evaluation4hIndicators } from "../strategy_evaluation_trading/evaluation4hIndicators.js";
 
 const exchange = new ccxt.bingx({
-  // apiKey: process.env.TEST_API_KEY,
-  // secret: process.env.SECRET_TEST_API_KEY,
+  apiKey: process.env.TEST_API_KEY,
+  secret: process.env.SECRET_TEST_API_KEY,
   timeout: 20000,
   enableRateLimit: true,
 });
@@ -31,7 +32,6 @@ const filePath4h = `ohlcv_${symbol}_${timeframe4h}.csv`;
 const filePath30m = `ohlcv_${symbol}_${timeframe30m}.csv`;
 const filePath5m = `ohlcv_${symbol}_${timeframe5m}.csv`;
 
-
 let cachedData = {
   processedData: null,
   processedData4h: null,
@@ -45,7 +45,7 @@ export async function webSocketOrderBookFetch() {
   const bidAskSpread = orderBookAveragePrice(orderbook);
   const realTimePrice = await exchange.fetchTicker(symbol);
   return { orderbook, bidAskSpread };
-};
+}
 
 // Main function to fetch API from BingX
 export async function fetchMarketData() {
@@ -97,31 +97,28 @@ export async function fetchMarketData() {
     console.error("Error fetching market data:", error);
     handleCcxtErrors(error);
   }
-};
+}
 
-// Helper for handling ccxt errors
-function handleCcxtErrors() {
-  if (error instanceof ccxt.NetworkError) {
-    console.error("Network Error:", error.message);
-  } else if (error instanceof ccxt.ExchangeError) {
-    console.error("Exchange Error:", error.message);
-    if (error.message.includes("429")) {
-      console.error("Rate limit exceeded. You might be temporarily banned.");
-    } else if (error.message.includes("403")) {
-      console.error(
-        "Access forbidden. You might be banned or using an invalid API key."
-      );
-    }
-  } else if (error instanceof ccxt.BaseError) {
-    console.error("Base Error:", error.message);
-  } else if (error.message.includes("timed out")) {
-    console.error("Request Timeout: The exchange took too long to respond.");
-  } else {
-    console.error("Unexpected Error:", error);
+// Funtion to fetch trading details
+export async function fetchTradingInfo() {
+  const balance = await exchange.fetchBalance();
+  const formattedBalances = balance.info.data.balances.map(
+    (asset) =>
+      `Asset: ${asset.asset}, Free: ${asset.free}, Locked: ${asset.locked}`
+  );
+
+  return { formattedBalances };
+}
+
+export async function fetchTradesHistory() {
+  try {
+    const tradesHistory = await exchange.fetchMyTrades(symbol);
+    return tradesHistory;
+  } catch (error) {
+    console.error("Error fetching trades history:", error);
+    throw new Error("Failed to fetch trades history");
   }
-
-  return null;
-};
+}
 
 // Helper to fetch 4month data on 30 minutes timeframe
 export async function fetchFullOHLCV(
@@ -162,7 +159,7 @@ export async function fetchFullOHLCV(
   }
 
   return allOHLCV;
-};
+}
 
 // Helper to retrieve historicaldata from CSV files
 export async function loadHistoricalDataForStrategy() {
@@ -213,9 +210,9 @@ export async function loadHistoricalDataForStrategy() {
     console.error("Error loading historical data:", error);
     return { processedData: [], processedData4h: [], processedData5m: [] };
   }
-};
+}
 
-// Helper to convert object data into array 
+// Helper to convert object data into array
 export function convertToArrayOfArrays(ohlcv, type) {
   const arrayOfArrays = ohlcv.map((candle) => [
     candle.timestamp,
@@ -238,7 +235,7 @@ export function convertToArrayOfArrays(ohlcv, type) {
   }
 
   return { ...indicators };
-};
+}
 
 // Main strategy evaluation and update market functions
 export async function fetchDataForStrategy() {
@@ -294,8 +291,8 @@ export async function fetchDataForStrategy() {
       // Schedule the next execution
       setTimeout(() => EvaluateStrategy(interval), strategyInterval);
     }
-  };
-  
+  }
+
   // Helper to update market data
   async function runMarketUpdate(interval) {
     try {
@@ -334,7 +331,7 @@ export async function fetchDataForStrategy() {
       // Schedule the next execution of data update
       setTimeout(() => runMarketUpdate(interval), fetchInterval);
     }
-  };
+  }
 
   EvaluateStrategy("4h");
   EvaluateStrategy("30m");
@@ -342,4 +339,28 @@ export async function fetchDataForStrategy() {
   runMarketUpdate("4h");
   runMarketUpdate("30m");
   runMarketUpdate("5m");
-};
+}
+
+// Helper for handling ccxt errors
+function handleCcxtErrors() {
+  if (error instanceof ccxt.NetworkError) {
+    console.error("Network Error:", error.message);
+  } else if (error instanceof ccxt.ExchangeError) {
+    console.error("Exchange Error:", error.message);
+    if (error.message.includes("429")) {
+      console.error("Rate limit exceeded. You might be temporarily banned.");
+    } else if (error.message.includes("403")) {
+      console.error(
+        "Access forbidden. You might be banned or using an invalid API key."
+      );
+    }
+  } else if (error instanceof ccxt.BaseError) {
+    console.error("Base Error:", error.message);
+  } else if (error.message.includes("timed out")) {
+    console.error("Request Timeout: The exchange took too long to respond.");
+  } else {
+    console.error("Unexpected Error:", error);
+  }
+
+  return null;
+}
