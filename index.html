@@ -8,7 +8,7 @@
       charset="utf-8"
     ></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <title>Document</title>
+    <title>Chart</title>
   </head>
   <body
     style="
@@ -23,70 +23,53 @@
     "
   >
     <div id="myDiv" style="width: 95vw; height: 95vh">
-    <button
-      id="btn-4h"
-      style="
-        position: fixed;
-        top: 25px;
-        right: 420px;
-        background: turquoise;
-        height: 40px;
-        width: 75px;
-        padding: 5px;
-        cursor: pointer;
-      "
-    >
-      4h Timeframe
-    </button>
-    <button
-      id="btn-30m"
-      style="
-        position: fixed;
-        top: 25px;
-        right: 500px;
-        background: turquoise;
-        height: 40px;
-        width: 75px;
-        padding: 5px;
-        cursor: pointer;
-      "
-    >
-      30m Timeframe
-    </button>
-    <button
-      id="btn-5m"
-      style="
-        position: fixed;
-        top: 25px;
-        right: 580px;
-        background: turquoise;
-        height: 40px;
-        width: 75px;
-        padding: 5px;
-        cursor: pointer;
-      "
-    >
-      5m Timeframe
-    </button>
-
-    <button
-      id="resetButton"
-      style="
-        position: fixed;
-        top: 25px;
-        right: 340px;
-        background: turquoise;
-        height: 40px;
-        width: 75px;
-        padding: 5px;
-        cursor: pointer;
-      "
-    >
-      Reset Trading
-    </button>
-  </div>
+      <button
+        id="btn-4h"
+        style="
+          position: fixed;
+          top: 25px;
+          right: 420px;
+          background: turquoise;
+          height: 40px;
+          width: 75px;
+          padding: 5px;
+          cursor: pointer;
+        "
+      >
+        4h Timeframe
+      </button>
+      <button
+        id="btn-30m"
+        style="
+          position: fixed;
+          top: 25px;
+          right: 500px;
+          background: turquoise;
+          height: 40px;
+          width: 75px;
+          padding: 5px;
+          cursor: pointer;
+        "
+      >
+        30m Timeframe
+      </button>
+      <button
+        id="btn-5m"
+        style="
+          position: fixed;
+          top: 25px;
+          right: 580px;
+          background: turquoise;
+          height: 40px;
+          width: 75px;
+          padding: 5px;
+          cursor: pointer;
+        "
+      >
+        5m Timeframe
+      </button>
+    </div>
     <script type="module" src="./chart/plotlyChart.js"></script>
-    <script src="./chart/resetButton.js"></script>
     <script>
       window.env = { WEBSOCKET_URL: "ws://localhost:3001" };
     </script>

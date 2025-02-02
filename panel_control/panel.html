@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/panel_control/panel.css" />
+    <title>Panel</title>
+  </head>
+  <body>
+    <div id="myPanel">
+      <div class="handle">Trading Control Panel</div>
+      <h1>Trading Information</h1>
+
+      <!-- Current Trade Info -->
+      <div class="trade-info">
+        <h2>Current Trades</h2>
+        <p id="trade-status">No active trades</p>
+        <p id="current-price">Price: $0</p>
+        <p id="profit-loss">Profit/Loss: $0</p>
+      </div>
+
+      <!-- Order History -->
+      <div class="order-history">
+        <h2>Order History</h2>
+        <ul id="order-history-list">
+          <li>Order #1: Buy 0.5 BTC at $20000</li>
+          <li>Order #2: Sell 0.3 BTC at $20500</li>
+          <!-- Add more dynamically -->
+        </ul>
+      </div>
+
+      <!-- Stats Table -->
+      <div class="stats">
+        <h2>Current Trading Stats</h2>
+        <table id="stats-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Stats will be dynamically injected here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions">
+        <button id="resetButton">Reset Trading</button>
+      </div>
+    </div>
+
+    <script src="./panel_control/panel.js"></script>
+  </body>
+</html>

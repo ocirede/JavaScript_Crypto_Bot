@@ -20,6 +20,10 @@ async function main() {
     app.get("/", (req, res) => {
       res.sendFile(path.join(__dirname, "index.html"));
     });
+    // Serve panel.html when visiting /panel
+    app.get("/panel", (req, res) => {
+      res.sendFile(path.join(__dirname, "panel_control", "panel.html"));
+    });
 
     app.get("/ohlcv_BTC-USDT_:timeframe.csv", (req, res) => {
       const { timeframe } = req.params;
@@ -39,7 +43,7 @@ async function main() {
     app.get("/indicators_BTC-USDT_:timeframe.csv", (req, res) => {
       const { timeframe } = req.params;
 
-      if (!timeframe.match(/^\d+[mh]$/)) { 
+      if (!timeframe.match(/^\d+[mh]$/)) {
         return res.status(400).send("Invalid timeframe format.");
       }
       const filePath = path.join(
@@ -55,10 +59,6 @@ async function main() {
       });
     });
 
-    // Serve static files
-    app.use(express.static(path.join(__dirname, "..")));
-    app.use("/chart", express.static(path.join(__dirname, "chart")));
-   
     // Endpoint to reset trading
     app.post("/reset-trading", (req, res) => {
       try {
@@ -69,6 +69,14 @@ async function main() {
         res.status(500).send({ message: "Error resetting trading.", error });
       }
     });
+
+    // Serve static files
+    app.use(express.static(path.join(__dirname, "..")));
+    app.use("/chart", express.static(path.join(__dirname, "chart")));
+    app.use(
+      "/panel_control",
+      express.static(path.join(__dirname, "panel_control"))
+    );
 
     // Start the server
     app.listen(port, () => {

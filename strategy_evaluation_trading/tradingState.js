@@ -1,6 +1,7 @@
 let isTradingActive = true; 
 
-export function stopTrading() {
+
+function stopTrading() {
   isTradingActive = false;
   console.log("Trading has been stopped.");
 }
@@ -13,3 +14,21 @@ export function resetTrading() {
 export function isTrading() {
   return isTradingActive;
 }
+
+export function recordTrade(isWin, wins, losses) {
+  if (isWin) {
+    wins++;
+  } else {
+    losses++;
+  }
+
+  checkingTradingStatus(wins, losses);
+}
+
+function checkingTradingStatus(wins, losses) {
+  let lossThreshold = 2;
+  if (losses > wins * lossThreshold) {
+    stopTrading();
+  }
+}
+
