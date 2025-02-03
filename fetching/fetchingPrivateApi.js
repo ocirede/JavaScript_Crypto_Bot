@@ -1,7 +1,10 @@
 import ccxt from "ccxt";
 import "dotenv/config";
-import { resetTrading, recordTrade } from "../strategy_evaluation_trading/tradingState.js";
-import { webSocketOrderBookFetch } from "./fetchData.js";
+import {
+  resetTrading,
+  recordTrade,
+} from "../strategy_evaluation_trading/tradingState.js";
+import { lastPrice } from "../webSocket/webSocket.js";
 
 const symbol = "BTC-USDT";
 let wins = 0;
@@ -34,35 +37,30 @@ export async function fetchTradingInfo() {
   }
 }
 
-
 export async function fetchTradesHistory() {
   try {
     const tradesHistory = await exchange.fetchMyTrades(symbol);
-    const {realTimePrice} = webSocketOrderBookFetch()
-
-    const currentPrice = realTimePrice.last;
-    if (!currentPrice) {
+    if (!lastPrice) {
       throw new Error("Unable to fetch current price for symbol");
     }
 
     // Evaluate trades for win/loss
     tradesHistory.forEach((trade) => {
-      if (trade.side === 'buy' && trade.price < currentPrice) {
-        losses++; 
+      if (trade.side === "buy" && trade.price < lastPrice) {
+        losses++;
         isWin = false;
-      }else if(trade.side === "buy" && trade.price > currentPrice){
+      } else if (trade.side === "buy" && trade.price > lastPrice) {
         wins++;
-        isWin= true;
-      } else if (trade.side === 'sell' && trade.price > currentPrice) {
-        wins++; 
-        isWin= true;
-      }else if (trade.side === 'sell' && trade.price < currentPrice) {
-        isWin = false; 
+        isWin = true;
+      } else if (trade.side === "sell" && trade.price > lastPrice) {
+        wins++;
+        isWin = true;
+      } else if (trade.side === "sell" && trade.price < lastPrice) {
+        isWin = false;
       }
-      recordTrade(isWin, wins, losses); 
-
+      recordTrade(isWin, wins, losses);
     });
-    return tradesHistory;
+    return { tradesHistory, wins, losses };
   } catch (error) {
     console.error("Error fetching trades history:", error);
     throw new Error("Failed to fetch trades history");
@@ -81,9 +79,8 @@ export async function fetchOpenTrades() {
   }
 }
 
-
 export function manualResetTrading() {
   resetTrading();
-  wins=0;
-  losses= 0;
- }
+  wins = 0;
+  losses = 0;
+}

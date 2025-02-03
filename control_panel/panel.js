@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fetch("/trading-info")
   .then((response) => response.json())
   .then((data) => {
+    
 
     const tableBody = document.querySelector("#stats-table tbody");
     tableBody.innerHTML = ""; 
@@ -29,17 +30,33 @@ document.addEventListener("DOMContentLoaded", () => {
     .then((response) => response.json())
     .then((data) => {
       const trades = data;
-
+      
       // Get the order history list element
       const tradesHistoryList = document.querySelector("#order-history-list");
-
+      const statsWinsLosses = document.querySelector("#stats-table1 tbody");
+     
+     
       // Clear existing list items before adding new ones
       tradesHistoryList.innerHTML = "";
+      statsWinsLosses.innerHTML= "";
+
+      // Check if stats exist and update the stats table
+    if (trades.stats) {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>Wins: ${trades.stats.wins}</td>
+        <td>Losses: ${trades.stats.losses}</td>
+        <td>Win/Loss Ratio: ${trades.stats.winLossRatio}</td>
+      `;
+      statsWinsLosses.appendChild(row);
+    } else {
+      console.warn("Stats not found in response.");
+    }
+
 
       // Loop through the trades and create list items
-      trades.forEach((trade, index) => {
+      trades.tradesHistory.forEach((trade, index) => {
         const listItem = document.createElement("li");
-
         // Format the trade data as needed
         const tradeInfo = `
           Order #${index + 1}: 

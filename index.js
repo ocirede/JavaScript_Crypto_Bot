@@ -79,10 +79,18 @@ async function main() {
     app.get("/trades-history", async (req, res) => {
       try {
         // Fetch trades history
-        const tradesHistory = await fetchTradesHistory();
+        const {tradesHistory, wins, losses} = await fetchTradesHistory();
         // Send the trades history back as JSON
-        res.json(tradesHistory);
-      } catch (error) {
+        res.json({
+          tradesHistory,
+          stats: {
+            wins,
+            losses,
+            winLossRatio: losses === 0 ? wins : (wins / losses).toFixed(2),
+          },
+        });
+        
+            } catch (error) {
         console.error("Error fetching trades history:", error);
         res.status(500).json({ error: "Failed to fetch trades history" });
       }

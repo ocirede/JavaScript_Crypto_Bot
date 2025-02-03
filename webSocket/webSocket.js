@@ -3,14 +3,13 @@ import zlib from "zlib";
 import "dotenv/config";
 import { webSocketOrderBookFetch } from "../fetching/fetchData.js";
 import { Buffer } from "buffer";
-import chalk from "chalk";
 
 const symbol = "BTC-USDT";
 const wspath = "wss://open-api-swap.bingx.com/swap-market";
 const wsport = process.env.WS_PORT;
 let socket;
 let receivedMessage = "";
-let realTimePrice = 0;
+let lastPrice = 0;
 let lastMessageTime = 0;
 const RATE_LIMIT = 1000;
 let lastFetchTime = 0;
@@ -94,7 +93,7 @@ async function onMessage(message) {
   // Fetch orderbook and spread data
   const { orderbook, bidAskSpread, realTimePrice } =
     await webSocketOrderBookFetch();
-  const lastPrice = realTimePrice.last;
+   lastPrice = realTimePrice.last;
   // Prepare real-time price data to send to the clients
   const realTimeData = {
     price: lastPrice,
@@ -136,4 +135,4 @@ function onClose() {
   }, 1000);
 }
 
-export { socket, realTimePrice };
+export { socket, lastPrice };

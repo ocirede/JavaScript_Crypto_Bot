@@ -42,6 +42,7 @@ export async function webSocketOrderBookFetch() {
   const orderbook = await exchange.fetchOrderBook(symbol);
   const bidAskSpread = orderBookAveragePrice(orderbook);
   const realTimePrice = await exchange.fetchTicker(symbol);
+
   return { orderbook, bidAskSpread, realTimePrice };
 }
 
