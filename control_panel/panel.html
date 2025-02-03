@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="/panel_control/panel.css" />
+    <link rel="stylesheet" href="/control_panel/panel.css" />
     <title>Panel</title>
   </head>
   <body>
@@ -14,17 +14,18 @@
       <!-- Current Trade Info -->
       <div class="trade-info">
         <h2>Current Trades</h2>
-        <p id="trade-status">No active trades</p>
-        <p id="current-price">Price: $0</p>
-        <p id="profit-loss">Profit/Loss: $0</p>
+        <ul id="trade-status-list">
+          <li></li>
+          <li></li>
+        </ul>
       </div>
 
       <!-- Order History -->
       <div class="order-history">
         <h2>Order History</h2>
         <ul id="order-history-list">
-          <li>Order #1: Buy 0.5 BTC at $20000</li>
-          <li>Order #2: Sell 0.3 BTC at $20500</li>
+          <li></li>
+          <li></li>
         </ul>
       </div>
 
@@ -34,10 +35,28 @@
         <table id="stats-table">
           <thead>
             <tr>
-              <th>Metric</th>
-              <th>Value</th>
+              <th>Asset</th>
+              <th>Free</th>
+              <th>Used</th>
+              <th>Total</th>
+
             </tr>
           </thead>
+         
+          <tbody>
+          </tbody>
+        </table>
+        <table id="stats-table1">
+          <thead>
+            <tr>
+              <th>Initial Balance</th>
+              <th>Wins</th>
+              <th>Loss</th>
+              <th>Ratio</th>
+
+            </tr>
+          </thead>
+         
           <tbody>
           </tbody>
         </table>
@@ -49,6 +68,6 @@
       </div>
     </div>
 
-    <script type="module" src="/panel_control/panel.js"></script>
+    <script type="module" src="/control_panel/panel.js"></script>
   </body>
 </html>

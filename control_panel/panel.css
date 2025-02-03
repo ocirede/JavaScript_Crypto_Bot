@@ -92,23 +92,23 @@ body {
   }
   
   /* Stats Table */
-  #stats-table {
+  #stats-table, #stats-table1 {
     width: 100%;
     border-collapse: collapse;
   }
   
-  #stats-table th, #stats-table td {
+  #stats-table th, #stats-table td, #stats-table1 th, #stats-table1 td {
     padding: 10px;
     text-align: left;
     border: 1px solid #ddd;
   }
   
-  #stats-table th {
+  #stats-table th, #stats-table1  th{
     background-color: #8e44ad;
     color: white;
   }
   
-  #stats-table td {
+  #stats-table td, #stats-table1 td {
     background-color: #f4f4f4;
   }
   

@@ -3,13 +3,14 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import "dotenv/config";
-import { manualResetTrading } from "./strategy_evaluation_trading/strategy.js";
+import { manualResetTrading } from "./fetching/fetchingPrivateApi.js";
 import { tradingStrategy } from "./strategy_evaluation_trading/strategy.js";
+import { fetchDataForStrategy } from "./fetching/fetchData.js";
 import {
-  fetchDataForStrategy,
   fetchTradingInfo,
   fetchTradesHistory,
-} from "./fetching_csv/fetchData.js";
+  fetchOpenTrades
+} from "./fetching/fetchingPrivateApi.js";
 
 async function main() {
   console.log("Starting trading bot...");
@@ -26,7 +27,7 @@ async function main() {
     });
     // Serve panel.html when visiting /panel
     app.get("/panel", (req, res) => {
-      res.sendFile(path.join(__dirname, "panel_control", "panel.html"));
+      res.sendFile(path.join(__dirname, "control_panel", "panel.html"));
     });
 
     app.get("/ohlcv_BTC-USDT_:timeframe.csv", (req, res) => {
@@ -87,6 +88,19 @@ async function main() {
       }
     });
 
+     // Endpoint to get open orders
+     app.get("/open-orders", async (req, res) => {
+      try {
+        // Fetch trades history
+        const openOrders = await fetchOpenTrades();
+        // Send the trades history back as JSON
+        res.json(openOrders);
+      } catch (error) {
+        console.error("Error fetching trades history:", error);
+        res.status(500).json({ error: "Failed to fetch trades history" });
+      }
+    });
+
     // Endpoint to reset trading
     app.post("/reset-trading", (req, res) => {
       try {
@@ -102,8 +116,8 @@ async function main() {
     app.use(express.static(path.join(__dirname, "..")));
     app.use("/chart", express.static(path.join(__dirname, "chart")));
     app.use(
-      "/panel_control",
-      express.static(path.join(__dirname, "panel_control"))
+      "/control_panel",
+      express.static(path.join(__dirname, "control_panel"))
     );
 
     // Start the server

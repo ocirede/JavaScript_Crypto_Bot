@@ -13,8 +13,6 @@ import { evaluation30mIndicators } from "../strategy_evaluation_trading/evaluati
 import { evaluation4hIndicators } from "../strategy_evaluation_trading/evaluation4hIndicators.js";
 
 const exchange = new ccxt.bingx({
-  apiKey: process.env.TEST_API_KEY,
-  secret: process.env.SECRET_TEST_API_KEY,
   timeout: 20000,
   enableRateLimit: true,
 });
@@ -44,7 +42,7 @@ export async function webSocketOrderBookFetch() {
   const orderbook = await exchange.fetchOrderBook(symbol);
   const bidAskSpread = orderBookAveragePrice(orderbook);
   const realTimePrice = await exchange.fetchTicker(symbol);
-  return { orderbook, bidAskSpread };
+  return { orderbook, bidAskSpread, realTimePrice };
 }
 
 // Main function to fetch API from BingX
@@ -96,27 +94,6 @@ export async function fetchMarketData() {
   } catch (error) {
     console.error("Error fetching market data:", error);
     handleCcxtErrors(error);
-  }
-}
-
-// Funtion to fetch trading details
-export async function fetchTradingInfo() {
-  const balance = await exchange.fetchBalance();
-  const formattedBalances = balance.info.data.balances.map(
-    (asset) =>
-      `Asset: ${asset.asset}, Free: ${asset.free}, Locked: ${asset.locked}`
-  );
-
-  return { formattedBalances };
-}
-
-export async function fetchTradesHistory() {
-  try {
-    const tradesHistory = await exchange.fetchMyTrades(symbol);
-    return tradesHistory;
-  } catch (error) {
-    console.error("Error fetching trades history:", error);
-    throw new Error("Failed to fetch trades history");
   }
 }
 

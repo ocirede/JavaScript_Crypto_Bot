@@ -1,7 +1,7 @@
 import WebSocket, { WebSocketServer } from "ws";
 import zlib from "zlib";
 import "dotenv/config";
-import { webSocketOrderBookFetch } from "../fetching_csv/fetchData.js";
+import { webSocketOrderBookFetch } from "../fetching/fetchData.js";
 import { Buffer } from "buffer";
 import chalk from "chalk";
 
@@ -91,36 +91,18 @@ async function onMessage(message) {
     return;
   }
 
-  // Parse WebSocket message
-  const parsedData = JSON.parse(decodedMsg);
-
-  const bids = parsedData?.data?.bids;
-  const asks = parsedData?.data?.asks;
-
-  if (bids && asks) {
-    const bestBid = parseFloat(bids[0][0]);
-    const bestAsk = parseFloat(asks[0][0]); // Accessing the first ask price
-
-    if (bestBid && bestAsk) {
-      realTimePrice = (bestBid + bestAsk) / 2;
-      console.log(
-        chalk.yellow(`Calculated Real-Time Price: ${realTimePrice.toFixed(2)}`)
-      );
-
-      // Prepare real-time price data to send to the clients
-      const realTimeData = {
-        price: realTimePrice,
-        timestamp: new Date().toISOString(),
-      };
-
-      // Update the latest data
-      onNewDataUpdate(realTimeData);
-    } else {
-      console.warn("Failed to extract bid/ask data for price calculation.");
-    }
-  } else {
-    console.warn("No bids or asks data found in the message.");
-  }
+  // Fetch orderbook and spread data
+  const { orderbook, bidAskSpread, realTimePrice } =
+    await webSocketOrderBookFetch();
+  const lastPrice = realTimePrice.last;
+  // Prepare real-time price data to send to the clients
+  const realTimeData = {
+    price: lastPrice,
+    timestamp: new Date().toISOString(),
+  };
+  console.log("LastPrice:", lastPrice)
+  // Update the latest data
+  onNewDataUpdate(realTimeData);
 
   // Throttle market data fetches to avoid too frequent calls
   const currentTime = Date.now();
@@ -128,9 +110,6 @@ async function onMessage(message) {
   // Fetch data based on the fetch interval
   if (currentTime - lastFetchTime >= fetchInterval) {
     try {
-      // Fetch orderbook and spread data
-      const { orderbook, bidAskSpread } = await webSocketOrderBookFetch();
-
       // Update the last fetch time
       lastFetchTime = currentTime;
     } catch (error) {

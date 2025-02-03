@@ -3,7 +3,7 @@ import { calculateEMA } from "../indicators/emaCalculation.js";
 import { calculateThirdInstance, calculateMACD } from "../indicators/macdCalculation.js";
 import { calculateBollingerBands } from "../indicators/bollingerBandsCalculation.js";
 import { kalmanFilter } from "../indicators/kalmanFilter.js";
-import { saveIndicatorsToCsv } from "../fetching_csv/saveIndicatorsToCsv.js";
+import { saveIndicatorsToCsv } from "../fetching/saveIndicatorsToCsv.js";
 import { calculateVWAPBands } from "../indicators/calculateVMAPBands.js";
 import { getTRSpikes } from "../indicators/trueRange.js";
 import {
