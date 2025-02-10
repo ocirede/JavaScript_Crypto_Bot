@@ -86,8 +86,9 @@ async function main() {
           stats: {
             wins,
             losses,
-            winLossRatio: losses === 0 ? wins : (wins / losses).toFixed(2),
-          },
+            winRatio : losses === 0 ? (wins === 0 ? "N/A" : "Infinity") : (wins / (wins + losses)).toFixed(2),
+            lossRatio : wins === 0 ? "0" : (losses / (wins + losses)).toFixed(2)
+        },
         });
         
             } catch (error) {

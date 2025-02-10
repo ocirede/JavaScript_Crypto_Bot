@@ -1,5 +1,5 @@
 // Function to fetch and update the chart
-function fetchAndUpdateChart(timeframe = "30m") {
+export function fetchAndUpdateChart(timeframe = "30m") {
   Promise.all([
     d3.csv(`/ohlcv_BTC-USDT_${timeframe}.csv`),
     d3.csv(`/indicators_BTC-USDT_${timeframe}.csv`),
@@ -49,10 +49,16 @@ function fetchAndUpdateChart(timeframe = "30m") {
         visible: true,
       };
 
+      // Define the period used for Bollinger Bands calculation
+      const bbPeriod = 20;
+
+      // Trim the merged data to exclude the first 'bbPeriod' entries
+      const trimmedData = mergedData.slice(bbPeriod);
+
       // Define the Bollinger Bands traces
       const bbMiddleTrace = {
-        x: unpack(mergedData, "timestamp"),
-        y: unpack(mergedData, "bbMiddle"),
+        x: unpack(trimmedData, "timestamp"),
+        y: unpack(trimmedData, "bbMiddle"),
         mode: "lines",
         name: "BB Middle",
         line: { color: "white", width: 2 },
@@ -60,8 +66,8 @@ function fetchAndUpdateChart(timeframe = "30m") {
       };
 
       const bbUpperTrace = {
-        x: unpack(mergedData, "timestamp"),
-        y: unpack(mergedData, "bbUpper"),
+        x: unpack(trimmedData, "timestamp"),
+        y: unpack(trimmedData, "bbUpper"),
         mode: "lines",
         name: "BB Upper",
         line: { color: "purple", width: 2 },
@@ -69,8 +75,8 @@ function fetchAndUpdateChart(timeframe = "30m") {
       };
 
       const bbLowerTrace = {
-        x: unpack(mergedData, "timestamp"),
-        y: unpack(mergedData, "bbLower"),
+        x: unpack(trimmedData, "timestamp"),
+        y: unpack(trimmedData, "bbLower"),
         mode: "lines",
         name: "BB Lower",
         line: { color: "purple", width: 2 },
@@ -83,7 +89,7 @@ function fetchAndUpdateChart(timeframe = "30m") {
         y: unpack(mergedData, "ema55"),
         mode: "lines",
         name: "EMA 55",
-        line: { color: "green" },
+        line: { color: " pink" },
         visible: false,
       };
 
@@ -108,10 +114,10 @@ function fetchAndUpdateChart(timeframe = "30m") {
       };
 
       // Define Macd
-      const histogramData = unpack(mergedData, "histogram");
-      const trend = unpack(mergedData, "trend");
+      const histogramData = unpack(trimmedData, "histogram");
+      const trend = unpack(trimmedData, "trend");
       const macdHistogramTrace = {
-        x: unpack(mergedData, "timestamp"),
+        x: unpack(trimmedData, "timestamp"),
         y: histogramData,
         type: "bar",
         name: "MACD Histogram",
@@ -123,8 +129,8 @@ function fetchAndUpdateChart(timeframe = "30m") {
       };
 
       const macdSignalTrace = {
-        x: unpack(mergedData, "timestamp"),
-        y: unpack(mergedData, "signal"),
+        x: unpack(trimmedData, "timestamp"),
+        y: unpack(trimmedData, "signal"),
         mode: "lines",
         name: "MACD Signal",
         line: { color: "orange" },
@@ -133,22 +139,12 @@ function fetchAndUpdateChart(timeframe = "30m") {
       };
 
       const macdTrace = {
-        x: unpack(mergedData, "timestamp"),
-        y: unpack(mergedData, "macd"),
+        x: unpack(trimmedData, "timestamp"),
+        y: unpack(trimmedData, "macd"),
         mode: "lines",
         name: "MACD",
         line: { color: "blue" },
         yaxis: "y3",
-        visible: false,
-      };
-
-      // Define spike markers for TR
-      const spikesTrace = {
-        x: unpack(mergedData, "timestamp"),
-        y: unpack(mergedData, "spikes"),
-        mode: "markers",
-        name: "Spikes",
-        marker: { size: 10, color: "red", symbol: "cross" },
         visible: false,
       };
 
@@ -191,24 +187,22 @@ function fetchAndUpdateChart(timeframe = "30m") {
       };
 
       // Define volume trend for Macd
-      const invertedTrend = trend.map((value) => -value);
+      //const invertedTrend = trend.map((value) => -value);
       const trendTrace = {
-        x: unpack(mergedData, "timestamp"),
-        y: invertedTrend,
+        x: unpack(trimmedData, "timestamp"),
+        y: trend,
         type: "bar",
         name: "Trend",
         marker: {
-          color: invertedTrend.map((value) =>
-            value >= 0 ? "darkgrey" : "indigo"
-          ),
+          color: trend.map((value) => (value >= 0 ? "grey" : "indigo")),
         },
         opacity: 0.3,
         yaxis: "y3",
         visible: false,
       };
       const trendOverlayTrace = {
-        x: unpack(mergedData, "timestamp"),
-        y: invertedTrend.map((value) => value * 1.05),
+        x: unpack(trimmedData, "timestamp"),
+        y: trend.map((value) => value * 1.05),
         type: "scatter",
         mode: "lines",
         name: "Trend Overlay",
@@ -220,40 +214,7 @@ function fetchAndUpdateChart(timeframe = "30m") {
         visible: false,
       };
 
-      const pocPrices = mergedData.map((data) => data.pocPrice);
-      const vahPrices = mergedData.map((data) => data.vah);
-      const valPrices = mergedData.map((data) => data.val);
-
-      // Create traces for the POC, VAH, and VAL lines
-      const pocLineTrace = {
-        x: unpack(ohlcvRows, "timestamp"),
-        y: pocPrices,
-        type: "scatter",
-        mode: "lines",
-        name: "POC",
-        line: { color: "blue", width: 2 },
-        visible: false,
-      };
-
-      const vahLineTrace = {
-        x: unpack(ohlcvRows, "timestamp"),
-        y: vahPrices,
-        type: "scatter",
-        mode: "lines",
-        name: "VAH",
-        line: { color: "green", width: 2 },
-        visible: false,
-      };
-
-      const valLineTrace = {
-        x: unpack(ohlcvRows, "timestamp"),
-        y: valPrices,
-        type: "scatter",
-        mode: "lines",
-        name: "VAL",
-        line: { color: "red", width: 2 },
-        visible: false,
-      };
+      
 
       // Empty trace for real-time price updates
       const realTimeTrace = {
@@ -282,16 +243,12 @@ function fetchAndUpdateChart(timeframe = "30m") {
         macdHistogramTrace,
         macdSignalTrace,
         macdTrace,
-        spikesTrace,
         kalman,
         bestFitLine,
         support,
         resistance,
         trendTrace,
         trendOverlayTrace,
-        pocLineTrace,
-        vahLineTrace,
-        valLineTrace,
         realTimeTrace,
       ];
 
@@ -358,6 +315,12 @@ function fetchAndUpdateChart(timeframe = "30m") {
           side: "left",
           autorange: true,
         },
+        yaxis2: {
+          title: "ATR-Spikes",
+          overlaying: "y",
+          side: "right",
+          showgrid: false,
+        },
 
         updatemenus: [
           {
@@ -386,59 +349,49 @@ function fetchAndUpdateChart(timeframe = "30m") {
                 args: [{ visible: [true, true, true] }, [7, 8, 9]],
                 args2: [{ visible: [false, false, false] }, [7, 8, 9]],
               },
+
               {
-                label: "Spikes",
+                label: "Kalman",
                 method: "restyle",
                 args: [{ visible: [true] }, [10]],
                 args2: [{ visible: [false] }, [10]],
               },
               {
-                label: "Kalman",
+                label: "BestFitLine",
                 method: "restyle",
                 args: [{ visible: [true] }, [11]],
                 args2: [{ visible: [false] }, [11]],
               },
               {
-                label: "BestFitLine",
+                label: "Support",
                 method: "restyle",
                 args: [{ visible: [true] }, [12]],
                 args2: [{ visible: [false] }, [12]],
               },
               {
-                label: "Support",
+                label: "Resistance",
                 method: "restyle",
                 args: [{ visible: [true] }, [13]],
                 args2: [{ visible: [false] }, [13]],
               },
               {
-                label: "Resistance",
+                label: "Trend",
                 method: "restyle",
                 args: [{ visible: [true] }, [14]],
                 args2: [{ visible: [false] }, [14]],
               },
               {
-                label: "Trend",
+                label: "TrendLine",
                 method: "restyle",
                 args: [{ visible: [true] }, [15]],
                 args2: [{ visible: [false] }, [15]],
               },
-              {
-                label: "TrendLine",
-                method: "restyle",
-                args: [{ visible: [true] }, [16]],
-                args2: [{ visible: [false] }, [16]],
-              },
-              {
-                label: "Poc-Vah-Val",
-                method: "restyle",
-                args: [{ visible: [true, true, true] }, [17, 18, 19]],
-                args2: [{ visible: [false, false, false] }, [17, 18, 19]],
-              },
+             
               {
                 label: "Real-Time Price",
                 method: "restyle",
-                args: [{ visible: [true] }, [20]],
-                args2: [{ visible: [false] }, [20]],
+                args: [{ visible: [true] }, [16]],
+                args2: [{ visible: [false] }, [16]],
               },
 
               {
@@ -446,10 +399,7 @@ function fetchAndUpdateChart(timeframe = "30m") {
                 method: "restyle",
                 args: [
                   { visible: [false] },
-                  [
-                    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
-                    18, 19, 20,
-                  ],
+                  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
                 ],
               },
             ],
@@ -529,14 +479,14 @@ function setupRealTimeUpdates() {
     const chartElement = document.getElementById("myDiv");
     const chartData = chartElement?.data;
 
-    if (!chartData || !chartData[20]) {
+    if (!chartData || !chartData[16]) {
       console.error("Real-time trace data is not available!");
       isUpdating = false;
       return;
     }
 
     // Ensure the real-time price trace is visible
-    const isRealTimeVisible = chartData[20].visible !== false;
+    const isRealTimeVisible = chartData[16].visible !== false;
 
     // Only update the real-time price trace if it is visible
     if (isRealTimeVisible) {
@@ -552,7 +502,7 @@ function setupRealTimeUpdates() {
             y: [[latestUpdate.y]],
             text: [[latestUpdate.text]],
           },
-          [20],
+          [16],
           50,
           {
             // Pass layout parameters to ensure other traces stay visible
@@ -595,7 +545,6 @@ buttons.forEach((button) => {
   });
 });
 
-
-
 // Fetch data and update chart initially
+
 fetchAndUpdateChart();

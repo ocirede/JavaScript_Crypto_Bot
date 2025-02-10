@@ -25,17 +25,17 @@ export function calculateThirdInstance(
     console.error("Invalid sensitivity3:", sensitivity3);
     return { trendUp3: [], trendDown3: [] };
   }
-
   // Calculate the MACD for the entire close array
   const macdCurrent = calc_macd(close, fastLength3, slowLength3);
   // Initialize arrays for trendUp3 and trendDown3
   const trend = [];
   // Loop over the MACD values (start from the second value since we are comparing current and previous)
-  for (let i = 1; i < macdCurrent.length; i++) {
+  for (let i = 0; i < macdCurrent.length; i++) {
     const macdPreviousValue = macdCurrent[i - 1];
     const macdCurrentValue = macdCurrent[i];
     // Calculate t3 (difference between current and previous MACD, then apply sensitivity)
     const t3 = (macdCurrentValue - macdPreviousValue) * sensitivity3;
+
     trend.push(t3);
   }
 
@@ -51,9 +51,8 @@ export function calculateMACD(close) {
   const slowEMA = calculateEMA(close, macdSlowLength);
   // Ensure the arrays are aligned to avoid index errors
   const macdLine = fastEMA.map((value, index) => value - slowEMA[index]);
-  const reverseMacdLine = macdLine.slice().reverse();
   // Calculate the Signal line (EMA of the MACD line)
-  const signalLine = calculateEMA(reverseMacdLine, macdSignalLength);
+  const signalLine = calculateEMA(macdLine, macdSignalLength);
   // Calculate the Histogram (MACD line - Signal line)
   const histogram = macdLine.map((value, index) => value - signalLine[index]);
 

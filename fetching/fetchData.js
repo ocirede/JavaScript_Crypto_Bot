@@ -22,10 +22,15 @@ const timeframe4h = "4h";
 const timeframe30m = "30m";
 const timeframe5m = "5m";
 const limit = 1000;
-const limit4h = 500;
 const now = new Date();
-const monthsAgo = new Date(now.setMonth(now.getMonth() - 4));
+const monthsAgo = new Date(now.getTime());
+monthsAgo.setMonth(now.getMonth() - 4);
+
+const daysAgo = new Date(now.getTime());
+daysAgo.setDate(now.getDate() - 10);
 const since = exchange.parse8601(monthsAgo.toISOString());
+const since5m = exchange.parse8601(daysAgo.toISOString());
+
 const filePath4h = `ohlcv_${symbol}_${timeframe4h}.csv`;
 const filePath30m = `ohlcv_${symbol}_${timeframe30m}.csv`;
 const filePath5m = `ohlcv_${symbol}_${timeframe5m}.csv`;
@@ -51,6 +56,8 @@ export async function fetchMarketData() {
   try {
     console.log("Fetching market data...");
 
+    // Fetch 30m OHLCV first
+    console.log("Fetching 30m OHLCV data...");
     let ohlcv = await fetchFullOHLCV(
       exchange,
       symbol,
@@ -59,20 +66,27 @@ export async function fetchMarketData() {
       limit
     );
 
-    let fourHoursOhlcv = await exchange.fetchOHLCV(
+    // Fetch 4h OHLCV
+    console.log("Fetching 4h OHLCV data...");
+    let fourHoursOhlcv = await fetchFullOHLCV(
+      exchange,
       symbol,
       timeframe4h,
-      undefined,
-      limit4h
-    );
-
-    let fiveMinuteOhlcv = await exchange.fetchOHLCV(
-      symbol,
-      timeframe5m,
-      undefined,
+      since,
       limit
     );
 
+    // Fetch 5m OHLCV
+    console.log("Fetching 5m OHLCV data...");
+    let fiveMinuteOhlcv = await fetchFullOHLCV(
+      exchange,
+      symbol,
+      timeframe5m,
+      since5m,
+      limit
+    );
+
+    // Check if data is empty
     if (
       !ohlcv ||
       ohlcv.length === 0 ||
@@ -84,6 +98,7 @@ export async function fetchMarketData() {
       console.log("No new data available from the exchange.");
       return null;
     }
+
     // Save fetched data to CSV
     saveOHLCVToCSV(ohlcv, filePath30m, true);
     saveOHLCVToCSV(fourHoursOhlcv, filePath4h, true);
@@ -110,30 +125,34 @@ export async function fetchFullOHLCV(
   let fetchSince = since;
 
   while (true) {
-    const ohlcv = await exchange.fetchOHLCV(
-      symbol,
-      timeframe,
-      fetchSince,
-      limit
-    );
-
-    if (ohlcv.length === 0) {
-      break;
-    }
-
-    allOHLCV = allOHLCV.concat(ohlcv);
-
-    // Update 'since' to the last timestamp + 1ms to avoid overlap
-    const lastTimestamp = ohlcv[ohlcv.length - 1][0];
-    fetchSince = lastTimestamp + 1;
-
-    // Break if fewer candles than the limit were fetched (indicating the end of data)
-    if (ohlcv.length < limit) {
-      break;
-    }
-
-    // Rate limiting to avoid hitting exchange limits
+    // Wait before sending the request to prevent getting banned
     await exchange.sleep(exchange.rateLimit);
+
+    try {
+      const ohlcv = await exchange.fetchOHLCV(
+        symbol,
+        timeframe,
+        fetchSince,
+        limit
+      );
+
+      if (ohlcv.length === 0) {
+        break; // No more data available
+      }
+
+      allOHLCV = allOHLCV.concat(ohlcv);
+
+      // Update 'since' to the last timestamp + 1ms
+      fetchSince = ohlcv[ohlcv.length - 1][0] + 1;
+
+      // Stop if we got fewer candles than requested (end of historical data)
+      if (ohlcv.length < limit) {
+        break;
+      }
+    } catch (error) {
+      console.error(`Error fetching ${timeframe} data:`, error);
+      await exchange.sleep(5000); // Wait 5 seconds before retrying in case of an error
+    }
   }
 
   return allOHLCV;
@@ -191,6 +210,7 @@ export async function loadHistoricalDataForStrategy() {
 }
 
 // Helper to convert object data into array
+// ohlcv = oldest data index 0 newst index - 1
 export function convertToArrayOfArrays(ohlcv, type) {
   const arrayOfArrays = ohlcv.map((candle) => [
     candle.timestamp,
@@ -201,15 +221,14 @@ export function convertToArrayOfArrays(ohlcv, type) {
     candle.volume,
   ]);
 
-  const reversedArray = arrayOfArrays.slice().reverse();
   let indicators;
 
   if (type === "30m") {
-    indicators = calculate30mIndicators(reversedArray);
+    indicators = calculate30mIndicators(arrayOfArrays);
   } else if (type === "4h") {
-    indicators = calculate4hIndicators(reversedArray);
+    indicators = calculate4hIndicators(arrayOfArrays);
   } else {
-    indicators = calculate5mIndicators(reversedArray);
+    indicators = calculate5mIndicators(arrayOfArrays);
   }
 
   return { ...indicators };

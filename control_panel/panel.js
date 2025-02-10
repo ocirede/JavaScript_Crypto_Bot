@@ -46,8 +46,10 @@ document.addEventListener("DOMContentLoaded", () => {
       row.innerHTML = `
         <td>Wins: ${trades.stats.wins}</td>
         <td>Losses: ${trades.stats.losses}</td>
-        <td>Win/Loss Ratio: ${trades.stats.winLossRatio}</td>
-      `;
+        <td>Win Ratio: ${trades.stats.winRatio}</td>
+        <td>Loss Ratio: ${trades.stats.lossRatio}</td>
+
+        `;
       statsWinsLosses.appendChild(row);
     } else {
       console.warn("Stats not found in response.");

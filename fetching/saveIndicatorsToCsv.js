@@ -4,22 +4,22 @@ import { Parser } from "@json2csv/plainjs";
 
 export function saveIndicatorsToCsv(
   timestamps,
+  close,
   bb,
   ema1,
   ema2,
   ema3,
   macd,
+  trend,
   smoothedClose,
   bestFitLine,
   supportLine,
   resistLine,
-  trend,
-  fibPivotsRetracement,
-  spikes,
+  hawkesProcess,
   filePathIndicators,
   resetFile = false
 ) {
-  console.log("Called Indicator csv function")
+  console.log("Called Indicator csv function");
   // Ensure the directory exists
   const dir = path.dirname(filePathIndicators);
   if (!fs.existsSync(dir)) {
@@ -30,6 +30,7 @@ export function saveIndicatorsToCsv(
   // CSV headers
   const fields = [
     "timestamp",
+    "close",
     "bbMiddle",
     "bbUpper",
     "bbLower",
@@ -40,17 +41,12 @@ export function saveIndicatorsToCsv(
     "macd",
     "signal",
     "histogram",
+    "trend",
     "kalman",
     "slope",
     "support",
     "resistance",
-    "trend",
-    "pocPrice",
-    "vah",
-    "val",
-    "spikes",
-
-
+  
   ];
 
   const json2csvParser = new Parser({
@@ -67,20 +63,9 @@ export function saveIndicatorsToCsv(
         return null;
       }
 
-      // Convert spikes array to a map for efficient lookup by timestamp
-      const spikesMap = new Map(
-        spikes.map((spike) => [
-          new Date(spike.timestamp).toISOString(),
-          spike.trValue,
-        ])
-      );
-      // Match the spike by timestamp
-      const spikeValue = spikesMap.get(timestamp.toISOString()) ?? null;
-     
-      //const pocVahVal = sessionsData?.find((entry) =>entry.timestamps.includes(ts) || null)
-
       return {
         timestamp: timestamp.toISOString(),
+        close: close?.[index] ?? null,
         bbMiddle: bb.middle?.[index] ?? null,
         bbUpper: bb.upper?.[index] ?? null,
         bbLower: bb.lower?.[index] ?? null,
@@ -88,23 +73,18 @@ export function saveIndicatorsToCsv(
         ema55: ema1?.[index] ?? null,
         ema400: ema2?.[index] ?? null,
         ema800: ema3?.[index] ?? null,
-        macd: macd.macdLine?.[index] ?? null,       
-        signal: macd.signalLine?.[index] ?? null,    
-        histogram: macd.histogram?.[index] ?? null,  
+        macd: macd.macdLine?.[index] ?? null,
+        signal: macd.signalLine?.[index] ?? null,
+        histogram: macd.histogram?.[index] ?? null,
+        trend: trend?.[index] ?? null,
         kalman: smoothedClose?.[index] ?? null,
         slope: bestFitLine?.[index] ?? null,
         support: supportLine?.[index] ?? null,
         resistance: resistLine?.[index] ?? null,
-        trend: trend?.[index] ?? null,
-        // pocPrice: pocVahVal?.pocPrice ?? null,
-        // vah: pocVahVal?.vah ?? null,
-        // val: pocVahVal?.val ?? null,
-        spikes: spikeValue,
 
-     };
-      
+      };
     })
-    .filter((entry) => entry !== null)
+    .filter((entry) => entry !== null);
 
   // Write or append data to CSV
   if (resetFile) {

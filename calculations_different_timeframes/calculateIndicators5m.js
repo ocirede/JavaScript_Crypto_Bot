@@ -1,51 +1,49 @@
 import { calculateEMA } from "../indicators/emaCalculation.js";
-import { calculateThirdInstance, calculateMACD } from "../indicators/macdCalculation.js";
+import {
+  calculateThirdInstance,
+  calculateMACD,
+} from "../indicators/macdCalculation.js";
 import { calculateBollingerBands } from "../indicators/bollingerBandsCalculation.js";
 import { kalmanFilter } from "../indicators/kalmanFilter.js";
 import { saveIndicatorsToCsv } from "../fetching/saveIndicatorsToCsv.js";
-import { getTRSpikes } from "../indicators/trueRange.js";
+import { processTradingSignals } from "../indicators/hawkesProcess.js";
 import {
   linearRegressionSlope,
   fitTrendlinesHighLow,
 } from "../indicators/linearRegression.js";
-import { calculateRetracementAndPivotPoints } from "../indicators/calculateRetracementLevels.js";
 
 export function calculate5mIndicators(arrayOfArrays) {
   const symbol = "BTC-USDT";
   const timeframe5m = "5m";
   const filePathIndicators5m = `indicators_${symbol}_${timeframe5m}.csv`;
-
   const timestamp = arrayOfArrays.map((candle) => candle[0]);
   const open = arrayOfArrays.map((candle) => candle[1]);
   const high = arrayOfArrays.map((candle) => candle[2]);
   const low = arrayOfArrays.map((candle) => candle[3]);
   const close = arrayOfArrays.map((candle) => candle[4]);
-  const volume = arrayOfArrays.map((candle) => candle[5]);
-  const reverseClose = [...close].reverse();
-  const reverseHigh = [...high].reverse();
-  const reverseLow = [...low].reverse();
-  const period = 14;
+ 
   const ema1Period = 50;
   const ema2Period = 400;
   const ema3Period = 800;
   const fastLength3 = 400;
   const slowLength3 = 800;
 
-  const ema1 = calculateEMA(reverseClose, ema1Period);
-  const ema2 = calculateEMA(reverseClose, ema2Period);
-  const ema3 = calculateEMA(reverseClose, ema3Period);
-  const macd = calculateMACD(reverseClose);
+  //const hawkesProcess = processTradingSignals(arrayOfArrays);
+
+  const ema1 = calculateEMA(close, ema1Period);
+  const ema2 = calculateEMA(close, ema2Period);
+  const ema3 = calculateEMA(close, ema3Period);
+  const macd = calculateMACD(close);
   const trend = calculateThirdInstance(
-    reverseClose,
+    close,
     fastLength3,
     slowLength3,
     100
   );
-  const bb = calculateBollingerBands(reverseClose);
-  const spikes = getTRSpikes(arrayOfArrays);
-  const smoothedClose = kalmanFilter(reverseClose);
-  const smoothedHigh = kalmanFilter(reverseHigh);
-  const smoothedLow = kalmanFilter(reverseLow);
+  const bb = calculateBollingerBands(close);
+  const smoothedClose = kalmanFilter(close);
+  const smoothedHigh = kalmanFilter(high);
+  const smoothedLow = kalmanFilter(low);
   const regressionResult = linearRegressionSlope(smoothedClose);
   const bestFitLine = regressionResult.bestFitLine;
   const { supportLine, resistLine } = fitTrendlinesHighLow(
@@ -53,36 +51,42 @@ export function calculate5mIndicators(arrayOfArrays) {
     smoothedLow,
     smoothedClose
   );
- // Compute Fibonacci retracement levels for the session
-   let fibPivotsRetracement = calculateRetracementAndPivotPoints(
-    timestamp,
-    open,
-    high,
-    low,
-    close
-  );
+  
+  const hawkesProcess = null
 
-
-fibPivotsRetracement = null;
   saveIndicatorsToCsv(
     timestamp,
+    close,
     bb,
     ema1,
     ema2,
     ema3,
     macd,
+    trend,
     smoothedClose,
     bestFitLine,
     supportLine,
     resistLine,
-    trend,
-    fibPivotsRetracement,
-    spikes,
+    hawkesProcess,
     filePathIndicators5m,
     true
   );
 
   return {
-    macd: macd
+    timestamp: timestamp,
+    open: open,
+    close: close,
+    high: high,
+    low: low,
+    bollingherBands: bb,
+    ema55: ema1,
+    ema400: ema2,
+    ema800: ema3,
+    macd: macd,
+    macdTrend: trend,
+    regressionLine: bestFitLine,
+    supportLine: supportLine,
+    resistanceLine: resistLine,
+    hawkesProcess: hawkesProcess,
   };
 }

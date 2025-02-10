@@ -31,6 +31,6 @@
       trend = trend + 0.1 * kalmanGain * (prices[i] - predictedEstimate);
     }
 
-    return filteredPrices.reverse();
+    return filteredPrices;
 
   }

@@ -12,5 +12,5 @@ export function calculateEMA(data, period) {
     }
   });
 
-  return ema.reverse();
+  return ema;
 }
