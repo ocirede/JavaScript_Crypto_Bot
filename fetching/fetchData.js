@@ -27,7 +27,7 @@ const monthsAgo = new Date(now.getTime());
 monthsAgo.setMonth(now.getMonth() - 4);
 
 const daysAgo = new Date(now.getTime());
-daysAgo.setDate(now.getDate() - 10);
+daysAgo.setDate(now.getDate() - 15);
 const since = exchange.parse8601(monthsAgo.toISOString());
 const since5m = exchange.parse8601(daysAgo.toISOString());
 
@@ -212,6 +212,7 @@ export async function loadHistoricalDataForStrategy() {
 // Helper to convert object data into array
 // ohlcv = oldest data index 0 newst index - 1
 export function convertToArrayOfArrays(ohlcv, type) {
+
   const arrayOfArrays = ohlcv.map((candle) => [
     candle.timestamp,
     candle.open,
@@ -220,6 +221,7 @@ export function convertToArrayOfArrays(ohlcv, type) {
     candle.close,
     candle.volume,
   ]);
+
 
   let indicators;
 
@@ -338,26 +340,34 @@ export async function fetchDataForStrategy() {
   runMarketUpdate("5m");
 }
 
-// Helper for handling ccxt errors
-function handleCcxtErrors() {
+async function handleCcxtErrors(error, retryCount = 3, delay = 1000) {
   if (error instanceof ccxt.NetworkError) {
     console.error("Network Error:", error.message);
   } else if (error instanceof ccxt.ExchangeError) {
     console.error("Exchange Error:", error.message);
     if (error.message.includes("429")) {
-      console.error("Rate limit exceeded. You might be temporarily banned.");
+      console.error("Rate limit exceeded. Retrying after a delay...");
+      delay *= 2; 
     } else if (error.message.includes("403")) {
-      console.error(
-        "Access forbidden. You might be banned or using an invalid API key."
-      );
+      console.error("Access forbidden. Check API keys or permissions.");
+      return null;
     }
   } else if (error instanceof ccxt.BaseError) {
     console.error("Base Error:", error.message);
   } else if (error.message.includes("timed out")) {
-    console.error("Request Timeout: The exchange took too long to respond.");
+    console.error("Request Timeout. Retrying...");
   } else {
     console.error("Unexpected Error:", error);
   }
 
+  // Retry logic
+  if (retryCount > 0) {
+    console.log(`Retrying in ${delay / 1000} seconds... (${retryCount} attempts left)`);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    return retryCount - 1; // Return remaining attempts
+  }
+
+  console.error("Max retries reached. Could not connect.");
   return null;
 }
+

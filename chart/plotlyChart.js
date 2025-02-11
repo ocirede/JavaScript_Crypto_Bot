@@ -187,7 +187,6 @@ export function fetchAndUpdateChart(timeframe = "30m") {
       };
 
       // Define volume trend for Macd
-      //const invertedTrend = trend.map((value) => -value);
       const trendTrace = {
         x: unpack(trimmedData, "timestamp"),
         y: trend,
@@ -214,7 +213,16 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         visible: false,
       };
 
-      
+      // Define Atr
+      const atrTrace = {
+        x: unpack(trimmedData, "timestamp"),
+        y: unpack(trimmedData, "atr"),
+        mode: "lines",
+        name: "ATR",
+        line: { color: "orange", width: 2 },
+        yaxis: "y2",
+        visible: false,
+      };
 
       // Empty trace for real-time price updates
       const realTimeTrace = {
@@ -249,6 +257,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         resistance,
         trendTrace,
         trendOverlayTrace,
+        atrTrace,
         realTimeTrace,
       ];
 
@@ -316,7 +325,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
           autorange: true,
         },
         yaxis2: {
-          title: "ATR-Spikes",
+          title: "ATR",
           overlaying: "y",
           side: "right",
           showgrid: false,
@@ -386,12 +395,19 @@ export function fetchAndUpdateChart(timeframe = "30m") {
                 args: [{ visible: [true] }, [15]],
                 args2: [{ visible: [false] }, [15]],
               },
-             
+
+              {
+                label: "Atr",
+                method: "restyle",
+                args: [{ visible: [true] }, [16]],
+                args2: [{ visible: [true] }, [16]],
+              },
+
               {
                 label: "Real-Time Price",
                 method: "restyle",
-                args: [{ visible: [true] }, [16]],
-                args2: [{ visible: [false] }, [16]],
+                args: [{ visible: [true] }, [17]],
+                args2: [{ visible: [false] }, [17]],
               },
 
               {
@@ -479,14 +495,14 @@ function setupRealTimeUpdates() {
     const chartElement = document.getElementById("myDiv");
     const chartData = chartElement?.data;
 
-    if (!chartData || !chartData[16]) {
+    if (!chartData || !chartData[17]) {
       console.error("Real-time trace data is not available!");
       isUpdating = false;
       return;
     }
 
     // Ensure the real-time price trace is visible
-    const isRealTimeVisible = chartData[16].visible !== false;
+    const isRealTimeVisible = chartData[17].visible !== false;
 
     // Only update the real-time price trace if it is visible
     if (isRealTimeVisible) {
@@ -502,7 +518,7 @@ function setupRealTimeUpdates() {
             y: [[latestUpdate.y]],
             text: [[latestUpdate.text]],
           },
-          [16],
+          [17],
           50,
           {
             // Pass layout parameters to ensure other traces stay visible

@@ -8,11 +8,11 @@ import { calculateBollingerBands } from "../indicators/bollingerBandsCalculation
 import { kalmanFilter } from "../indicators/kalmanFilter.js";
 import { saveIndicatorsToCsv } from "../fetching/saveIndicatorsToCsv.js";
 import { calculateVWAPBands } from "../indicators/calculateVMAPBands.js";
-import { processTradingSignals } from "../indicators/hawkesProcess.js";
 import {
   linearRegressionSlope,
   fitTrendlinesHighLow,
 } from "../indicators/linearRegression.js";
+import { calculateATRWithHawkes } from "../indicators/calculateAtr.js";
 
 export function calculate4hIndicators(arrayOfArrays) {
   const symbol = "BTC-USDT";
@@ -24,27 +24,21 @@ export function calculate4hIndicators(arrayOfArrays) {
   const low = arrayOfArrays.map((candle) => parseFloat(candle[3]));
   const close = arrayOfArrays.map((candle) => parseFloat(candle[4]));
   const volume = arrayOfArrays.map((candle) => parseFloat(candle[5]));
- 
+
   const period = 14;
   const ema1Period = 50;
   const ema2Period = 400;
   const ema3Period = 800;
   const fastLength3 = 400;
   const slowLength3 = 800;
-
+  const basedPeriod = 6;
 
   const ema1 = calculateEMA(close, ema1Period);
   const ema2 = calculateEMA(close, ema2Period);
   const ema3 = calculateEMA(close, ema3Period);
   const macd = calculateMACD(close);
-  const trend = calculateThirdInstance(
-    close,
-    fastLength3,
-    slowLength3,
-    100
-  );
+  const trend = calculateThirdInstance(close, fastLength3, slowLength3, 100);
   const bb = calculateBollingerBands(close);
-  //const hawkesProcess = processTradingSignals(arrayOfArrays);
   const smoothedClose = kalmanFilter(close);
   const smoothedHigh = kalmanFilter(high);
   const smoothedLow = kalmanFilter(low);
@@ -64,7 +58,13 @@ export function calculate4hIndicators(arrayOfArrays) {
     close
   );
 
-  const hawkesProcess = null
+  const { atr, clusteredVolatility } = calculateATRWithHawkes(
+    high,
+    low,
+    close,
+    timestamp,
+   basedPeriod
+  );
   saveIndicatorsToCsv(
     timestamp,
     close,
@@ -78,12 +78,13 @@ export function calculate4hIndicators(arrayOfArrays) {
     bestFitLine,
     supportLine,
     resistLine,
-   hawkesProcess,
+    atr,
+    clusteredVolatility,
     filePathIndicators4h,
     true
   );
 
-  return {  
+  return {
     timestamp: timestamp,
     open: open,
     close: close,
@@ -98,7 +99,7 @@ export function calculate4hIndicators(arrayOfArrays) {
     regressionLine: bestFitLine,
     supportLine: supportLine,
     resistanceLine: resistLine,
-  //hawkesProcess: hawkesProcess, 
-
-};
+    atr: atr,
+    atrSignal: clusteredVolatility,
+  };
 }

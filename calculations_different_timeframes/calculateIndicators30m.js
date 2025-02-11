@@ -1,20 +1,22 @@
-import {  ADX, VWAP, WEMA } from "technicalindicators";
+import { ADX, VWAP, WEMA } from "technicalindicators";
 import { calculateEMA } from "../indicators/emaCalculation.js";
 import { calculateVolumeProfile } from "../indicators/calculateVolumeProfile.js";
-import { calculateThirdInstance, calculateMACD } from "../indicators/macdCalculation.js";
+import {
+  calculateThirdInstance,
+  calculateMACD,
+} from "../indicators/macdCalculation.js";
 import { calculateBollingerBands } from "../indicators/bollingerBandsCalculation.js";
 import { kalmanFilter } from "../indicators/kalmanFilter.js";
 import { saveIndicatorsToCsv } from "../fetching/saveIndicatorsToCsv.js";
 import { calculateVWAPBands } from "../indicators/calculateVMAPBands.js";
-import { processTradingSignals } from "../indicators/hawkesProcess.js";
 import {
   linearRegressionSlope,
   fitTrendlinesHighLow,
 } from "../indicators/linearRegression.js";
 import { calculateRetracementAndPivotPoints } from "../indicators/calculateRetracementLevels.js";
-
+import { calculateATRWithHawkes } from "../indicators/calculateAtr.js";
 // Calculate technical indicators
-export function calculate30mIndicators(arrayOfArrays ) {
+export function calculate30mIndicators(arrayOfArrays) {
   const sliceOHLCV = arrayOfArrays.slice(0, 56);
   const candlesPerSession = 14;
   const symbol = "BTC-USDT";
@@ -29,16 +31,16 @@ export function calculate30mIndicators(arrayOfArrays ) {
   const low = arrayOfArrays.map((candle) => candle[3]);
   const close = arrayOfArrays.map((candle) => candle[4]);
   const volume = arrayOfArrays.map((candle) => candle[5]);
-  
+
   const period = 14;
   const ema1Period = 50;
   const ema2Period = 400;
   const ema3Period = 800;
   const fastLength3 = 400;
   const slowLength3 = 800;
+  const basedPeriod = 24;
 
   const adxValues = ADX.calculate({ high, low, close, period: period });
-  const hawkesProcess = processTradingSignals(arrayOfArrays);
   //const wemaValues = WEMA.calculate({ period: period, values: atrValues });
   const vwapValues = VWAP.calculate({ high, low, close, volume });
 
@@ -46,12 +48,7 @@ export function calculate30mIndicators(arrayOfArrays ) {
   const ema2 = calculateEMA(close, ema2Period);
   const ema3 = calculateEMA(close, ema3Period);
   const macd = calculateMACD(close);
-  const trend = calculateThirdInstance(
-    close,
-    fastLength3,
-    slowLength3,
-    100
-  );
+  const trend = calculateThirdInstance(close, fastLength3, slowLength3, 100);
   const bb = calculateBollingerBands(close);
   const smoothedClose = kalmanFilter(close);
   const smoothedHigh = kalmanFilter(high);
@@ -63,16 +60,17 @@ export function calculate30mIndicators(arrayOfArrays ) {
     smoothedLow,
     smoothedClose
   );
-   // Compute Fibonacci retracement levels for the session
-   let fibPivotsRetracement = calculateRetracementAndPivotPoints(
+  // Compute Fibonacci retracement levels for the session
+  let fibPivotsRetracement = calculateRetracementAndPivotPoints(
     timestamp,
     open,
     high,
     low,
     close
   );
+   const { atr, clusteredVolatility } = calculateATRWithHawkes(high, low, close, timestamp, basedPeriod );
 
-  //const hawkesProcess = null
+  
   saveIndicatorsToCsv(
     timestamp,
     close,
@@ -86,11 +84,12 @@ export function calculate30mIndicators(arrayOfArrays ) {
     bestFitLine,
     supportLine,
     resistLine,
-    hawkesProcess,
+    atr,
+    clusteredVolatility,
     filePathIndicators30m,
     true
   );
-  
+
   return {
     timestamp: timestamp,
     open: open,
@@ -106,6 +105,7 @@ export function calculate30mIndicators(arrayOfArrays ) {
     regressionLine: bestFitLine,
     supportLine: supportLine,
     resistanceLine: resistLine,
-    //hawkesProcess: hawkesProcess,
+    atr: atr,
+    atrSignal: clusteredVolatility
   };
 }

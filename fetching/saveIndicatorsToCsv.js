@@ -15,10 +15,12 @@ export function saveIndicatorsToCsv(
   bestFitLine,
   supportLine,
   resistLine,
-  hawkesProcess,
+  atr,
+  clusteredVolatility,
   filePathIndicators,
   resetFile = false
 ) {
+
   console.log("Called Indicator csv function");
   // Ensure the directory exists
   const dir = path.dirname(filePathIndicators);
@@ -46,6 +48,8 @@ export function saveIndicatorsToCsv(
     "slope",
     "support",
     "resistance",
+    "atr",
+    "atrSignal"
   
   ];
 
@@ -81,6 +85,8 @@ export function saveIndicatorsToCsv(
         slope: bestFitLine?.[index] ?? null,
         support: supportLine?.[index] ?? null,
         resistance: resistLine?.[index] ?? null,
+        atr: atr?.[index] ?? null,
+        atrSignal: clusteredVolatility?.[index] ?? null
 
       };
     })

@@ -6,11 +6,8 @@ import {
 import { calculateBollingerBands } from "../indicators/bollingerBandsCalculation.js";
 import { kalmanFilter } from "../indicators/kalmanFilter.js";
 import { saveIndicatorsToCsv } from "../fetching/saveIndicatorsToCsv.js";
-import { processTradingSignals } from "../indicators/hawkesProcess.js";
-import {
-  linearRegressionSlope,
-  fitTrendlinesHighLow,
-} from "../indicators/linearRegression.js";
+import {linearRegressionSlope,fitTrendlinesHighLow,} from "../indicators/linearRegression.js";
+import {calculateATRWithHawkes} from "../indicators/calculateAtr.js";
 
 export function calculate5mIndicators(arrayOfArrays) {
   const symbol = "BTC-USDT";
@@ -27,8 +24,7 @@ export function calculate5mIndicators(arrayOfArrays) {
   const ema3Period = 800;
   const fastLength3 = 400;
   const slowLength3 = 800;
-
-  //const hawkesProcess = processTradingSignals(arrayOfArrays);
+const basedPeriod = 48;
 
   const ema1 = calculateEMA(close, ema1Period);
   const ema2 = calculateEMA(close, ema2Period);
@@ -52,7 +48,9 @@ export function calculate5mIndicators(arrayOfArrays) {
     smoothedClose
   );
   
-  const hawkesProcess = null
+const {atr, clusteredVolatility} = calculateATRWithHawkes(high, low, close, timestamp, basedPeriod)
+
+
 
   saveIndicatorsToCsv(
     timestamp,
@@ -67,7 +65,8 @@ export function calculate5mIndicators(arrayOfArrays) {
     bestFitLine,
     supportLine,
     resistLine,
-    hawkesProcess,
+    atr,
+    clusteredVolatility,
     filePathIndicators5m,
     true
   );
@@ -87,6 +86,7 @@ export function calculate5mIndicators(arrayOfArrays) {
     regressionLine: bestFitLine,
     supportLine: supportLine,
     resistanceLine: resistLine,
-    hawkesProcess: hawkesProcess,
+    atr: atr,
+    atrSignal: clusteredVolatility
   };
 }
