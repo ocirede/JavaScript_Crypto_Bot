@@ -1,29 +1,20 @@
-import { ADX, VWAP, WEMA } from "technicalindicators";
+import {  VWAP } from "technicalindicators";
 import { calculateEMA } from "../indicators/emaCalculation.js";
-import { calculateVolumeProfile } from "../indicators/calculateVolumeProfile.js";
-import {
-  calculateThirdInstance,
-  calculateMACD,
-} from "../indicators/macdCalculation.js";
+import {calculateThirdInstance,calculateMACD,} from "../indicators/macdCalculation.js";
 import { calculateBollingerBands } from "../indicators/bollingerBandsCalculation.js";
 import { kalmanFilter } from "../indicators/kalmanFilter.js";
 import { saveIndicatorsToCsv } from "../fetching/saveIndicatorsToCsv.js";
-import { calculateVWAPBands } from "../indicators/calculateVMAPBands.js";
-import {
-  linearRegressionSlope,
-  fitTrendlinesHighLow,
-} from "../indicators/linearRegression.js";
-import { calculateRetracementAndPivotPoints } from "../indicators/calculateRetracementLevels.js";
+import {linearRegressionSlope,fitTrendlinesHighLow,} from "../indicators/linearRegression.js";
 import { calculateATRWithHawkes } from "../indicators/calculateAtr.js";
+
+
 // Calculate technical indicators
 export function calculate30mIndicators(arrayOfArrays) {
-  const sliceOHLCV = arrayOfArrays.slice(0, 56);
-  const candlesPerSession = 14;
+ 
   const symbol = "BTC-USDT";
   const timeframe30m = "30m";
   const filePathIndicators30m = `indicators_${symbol}_${timeframe30m}.csv`;
 
-  const sessionsData = calculateVolumeProfile(sliceOHLCV, candlesPerSession);
 
   const timestamp = arrayOfArrays.map((candle) => candle[0]);
   const open = arrayOfArrays.map((candle) => candle[1]);
@@ -32,16 +23,13 @@ export function calculate30mIndicators(arrayOfArrays) {
   const close = arrayOfArrays.map((candle) => candle[4]);
   const volume = arrayOfArrays.map((candle) => candle[5]);
 
-  const period = 14;
   const ema1Period = 50;
   const ema2Period = 400;
   const ema3Period = 800;
   const fastLength3 = 400;
   const slowLength3 = 800;
-  const basedPeriod = 24;
+  const basedPeriod = 14;
 
-  const adxValues = ADX.calculate({ high, low, close, period: period });
-  //const wemaValues = WEMA.calculate({ period: period, values: atrValues });
   const vwapValues = VWAP.calculate({ high, low, close, volume });
 
   const ema1 = calculateEMA(close, ema1Period);
@@ -60,16 +48,8 @@ export function calculate30mIndicators(arrayOfArrays) {
     smoothedLow,
     smoothedClose
   );
-  // Compute Fibonacci retracement levels for the session
-  let fibPivotsRetracement = calculateRetracementAndPivotPoints(
-    timestamp,
-    open,
-    high,
-    low,
-    close
-  );
-   const { atr, clusteredVolatility } = calculateATRWithHawkes(high, low, close, timestamp, basedPeriod );
-
+  
+  const {atr, avgATR, smoothedATRSlope, adx } = calculateATRWithHawkes(high, low, close,  arrayOfArrays, basedPeriod);
   
   saveIndicatorsToCsv(
     timestamp,
@@ -85,7 +65,8 @@ export function calculate30mIndicators(arrayOfArrays) {
     supportLine,
     resistLine,
     atr,
-    clusteredVolatility,
+    smoothedATRSlope,
+    adx,
     filePathIndicators30m,
     true
   );
@@ -106,6 +87,6 @@ export function calculate30mIndicators(arrayOfArrays) {
     supportLine: supportLine,
     resistanceLine: resistLine,
     atr: atr,
-    atrSignal: clusteredVolatility
-  };
+    avgATR: avgATR,
+    atrSlope: smoothedATRSlope,  };
 }

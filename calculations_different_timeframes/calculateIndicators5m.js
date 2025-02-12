@@ -18,13 +18,12 @@ export function calculate5mIndicators(arrayOfArrays) {
   const high = arrayOfArrays.map((candle) => candle[2]);
   const low = arrayOfArrays.map((candle) => candle[3]);
   const close = arrayOfArrays.map((candle) => candle[4]);
- 
   const ema1Period = 50;
   const ema2Period = 400;
   const ema3Period = 800;
   const fastLength3 = 400;
   const slowLength3 = 800;
-const basedPeriod = 48;
+  const basedPeriod = 14;
 
   const ema1 = calculateEMA(close, ema1Period);
   const ema2 = calculateEMA(close, ema2Period);
@@ -42,14 +41,9 @@ const basedPeriod = 48;
   const smoothedLow = kalmanFilter(low);
   const regressionResult = linearRegressionSlope(smoothedClose);
   const bestFitLine = regressionResult.bestFitLine;
-  const { supportLine, resistLine } = fitTrendlinesHighLow(
-    smoothedHigh,
-    smoothedLow,
-    smoothedClose
-  );
+  const { supportLine, resistLine } = fitTrendlinesHighLow(smoothedHigh,smoothedLow,smoothedClose);
   
-const {atr, clusteredVolatility} = calculateATRWithHawkes(high, low, close, timestamp, basedPeriod)
-
+  const {atr, avgATR, smoothedATRSlope, adx  } = calculateATRWithHawkes(high, low, close, arrayOfArrays, basedPeriod);
 
 
   saveIndicatorsToCsv(
@@ -66,7 +60,8 @@ const {atr, clusteredVolatility} = calculateATRWithHawkes(high, low, close, time
     supportLine,
     resistLine,
     atr,
-    clusteredVolatility,
+    smoothedATRSlope,
+    adx,
     filePathIndicators5m,
     true
   );
@@ -87,6 +82,8 @@ const {atr, clusteredVolatility} = calculateATRWithHawkes(high, low, close, time
     supportLine: supportLine,
     resistanceLine: resistLine,
     atr: atr,
-    atrSignal: clusteredVolatility
+    avgAtr: avgATR,
+    adx: adx,
+    atrSlope: smoothedATRSlope,
   };
 }

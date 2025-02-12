@@ -224,6 +224,22 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         visible: false,
       };
 
+      const adx = unpack(trimmedData, "adx")
+      const AdxOverlayAtr= {
+        x: unpack(trimmedData, "timestamp"),
+        y: adx,
+        type: "scatter",
+        mode: "lines",
+        name: "Adx",
+        line: {
+          color: "lime",
+          width: 2,
+        },
+        yaxis: "y2",
+        visible: false,
+      };
+
+
       // Empty trace for real-time price updates
       const realTimeTrace = {
         x: [],
@@ -258,6 +274,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         trendTrace,
         trendOverlayTrace,
         atrTrace,
+        AdxOverlayAtr,
         realTimeTrace,
       ];
 
@@ -325,7 +342,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
           autorange: true,
         },
         yaxis2: {
-          title: "ATR",
+          title: "ATR && ADX",
           overlaying: "y",
           side: "right",
           showgrid: false,
@@ -400,14 +417,21 @@ export function fetchAndUpdateChart(timeframe = "30m") {
                 label: "Atr",
                 method: "restyle",
                 args: [{ visible: [true] }, [16]],
-                args2: [{ visible: [true] }, [16]],
+                args2: [{ visible: [false] }, [16]],
+              },
+
+              {
+                label: "Adx",
+                method: "restyle",
+                args: [{ visible: [true] }, [17]],
+                args2: [{ visible: [false] }, [17]],
               },
 
               {
                 label: "Real-Time Price",
                 method: "restyle",
-                args: [{ visible: [true] }, [17]],
-                args2: [{ visible: [false] }, [17]],
+                args: [{ visible: [true] }, [18]],
+                args2: [{ visible: [false] }, [18]],
               },
 
               {
@@ -415,7 +439,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
                 method: "restyle",
                 args: [
                   { visible: [false] },
-                  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+                  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,18],
                 ],
               },
             ],
@@ -495,14 +519,14 @@ function setupRealTimeUpdates() {
     const chartElement = document.getElementById("myDiv");
     const chartData = chartElement?.data;
 
-    if (!chartData || !chartData[17]) {
+    if (!chartData || !chartData[18]) {
       console.error("Real-time trace data is not available!");
       isUpdating = false;
       return;
     }
 
     // Ensure the real-time price trace is visible
-    const isRealTimeVisible = chartData[17].visible !== false;
+    const isRealTimeVisible = chartData[18].visible !== false;
 
     // Only update the real-time price trace if it is visible
     if (isRealTimeVisible) {
@@ -518,7 +542,7 @@ function setupRealTimeUpdates() {
             y: [[latestUpdate.y]],
             text: [[latestUpdate.text]],
           },
-          [17],
+          [18],
           50,
           {
             // Pass layout parameters to ensure other traces stay visible

@@ -56,45 +56,23 @@ export async function fetchMarketData() {
   try {
     console.log("Fetching market data...");
 
-    // Fetch 30m OHLCV first
     console.log("Fetching 30m OHLCV data...");
-    let ohlcv = await fetchFullOHLCV(
-      exchange,
-      symbol,
-      timeframe30m,
-      since,
-      limit
+    let ohlcv = await handleCcxtErrors(() =>
+      fetchFullOHLCV(exchange, symbol, timeframe30m, since, limit)
     );
 
-    // Fetch 4h OHLCV
     console.log("Fetching 4h OHLCV data...");
-    let fourHoursOhlcv = await fetchFullOHLCV(
-      exchange,
-      symbol,
-      timeframe4h,
-      since,
-      limit
+    let fourHoursOhlcv = await handleCcxtErrors(() =>
+      fetchFullOHLCV(exchange, symbol, timeframe4h, since, limit)
     );
 
-    // Fetch 5m OHLCV
     console.log("Fetching 5m OHLCV data...");
-    let fiveMinuteOhlcv = await fetchFullOHLCV(
-      exchange,
-      symbol,
-      timeframe5m,
-      since5m,
-      limit
+    let fiveMinuteOhlcv = await handleCcxtErrors(() =>
+      fetchFullOHLCV(exchange, symbol, timeframe5m, since5m, limit)
     );
 
     // Check if data is empty
-    if (
-      !ohlcv ||
-      ohlcv.length === 0 ||
-      !fourHoursOhlcv ||
-      fourHoursOhlcv.length === 0 ||
-      !fiveMinuteOhlcv ||
-      fiveMinuteOhlcv.length === 0
-    ) {
+    if (!ohlcv || !fourHoursOhlcv || !fiveMinuteOhlcv) {
       console.log("No new data available from the exchange.");
       return null;
     }
@@ -109,9 +87,9 @@ export async function fetchMarketData() {
     return { ohlcv, fourHoursOhlcv, fiveMinuteOhlcv };
   } catch (error) {
     console.error("Error fetching market data:", error);
-    handleCcxtErrors(error);
   }
 }
+
 
 // Helper to fetch 4month data on 30 minutes timeframe
 export async function fetchFullOHLCV(
@@ -212,7 +190,6 @@ export async function loadHistoricalDataForStrategy() {
 // Helper to convert object data into array
 // ohlcv = oldest data index 0 newst index - 1
 export function convertToArrayOfArrays(ohlcv, type) {
-
   const arrayOfArrays = ohlcv.map((candle) => [
     candle.timestamp,
     candle.open,
@@ -221,7 +198,6 @@ export function convertToArrayOfArrays(ohlcv, type) {
     candle.close,
     candle.volume,
   ]);
-
 
   let indicators;
 
@@ -340,34 +316,36 @@ export async function fetchDataForStrategy() {
   runMarketUpdate("5m");
 }
 
-async function handleCcxtErrors(error, retryCount = 3, delay = 1000) {
-  if (error instanceof ccxt.NetworkError) {
-    console.error("Network Error:", error.message);
-  } else if (error instanceof ccxt.ExchangeError) {
-    console.error("Exchange Error:", error.message);
-    if (error.message.includes("429")) {
-      console.error("Rate limit exceeded. Retrying after a delay...");
-      delay *= 2; 
-    } else if (error.message.includes("403")) {
-      console.error("Access forbidden. Check API keys or permissions.");
-      return null;
+async function handleCcxtErrors(fn, retryCount = 3, delay = 1000) {
+  for (let attempt = 1; attempt <= retryCount; attempt++) {
+    try {
+      return await fn(); // Execute the function
+    } catch (error) {
+      if (error instanceof ccxt.NetworkError) {
+        console.error(`Network Error on attempt ${attempt}: ${error.message}`);
+      } else if (error instanceof ccxt.ExchangeError) {
+        console.error(`Exchange Error: ${error.message}`);
+        if (error.message.includes("429")) {
+          console.error("Rate limit exceeded. Retrying after a delay...");
+          delay *= 2; // Increase delay if rate-limited
+        } else if (error.message.includes("403")) {
+          console.error("Access forbidden. Check API keys or permissions.");
+          return null;
+        }
+      } else if (error instanceof ccxt.BaseError) {
+        console.error(`Base Error: ${error.message}`);
+      } else {
+        console.error(`Unexpected Error: ${error.message}`);
+      }
+
+      if (attempt < retryCount) {
+        console.log(`Retrying in ${delay / 1000} seconds... (${retryCount - attempt} attempts left)`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      } else {
+        console.error("Max retries reached. Could not connect.");
+        return null;
+      }
     }
-  } else if (error instanceof ccxt.BaseError) {
-    console.error("Base Error:", error.message);
-  } else if (error.message.includes("timed out")) {
-    console.error("Request Timeout. Retrying...");
-  } else {
-    console.error("Unexpected Error:", error);
   }
-
-  // Retry logic
-  if (retryCount > 0) {
-    console.log(`Retrying in ${delay / 1000} seconds... (${retryCount} attempts left)`);
-    await new Promise((resolve) => setTimeout(resolve, delay));
-    return retryCount - 1; // Return remaining attempts
-  }
-
-  console.error("Max retries reached. Could not connect.");
-  return null;
 }
 

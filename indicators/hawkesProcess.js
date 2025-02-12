@@ -1,13 +1,19 @@
-export function hawkesProcess(events, decay = 0.1) {
+export function hawkesProcess(events, decay = 0.1, lambda = 0.1, alpha = 0.7) {
   let intensity = [];
-  let lambda = 0.01; // Baseline intensity
-  let alpha = 0.5; // Excitation factor
 
+  // Iterate over events
   for (let i = 0; i < events.length; i++) {
     let sum = 0;
+
+    // Loop over previous events to calculate intensity contribution
     for (let j = 0; j < i; j++) {
-      sum += Math.exp(-decay * (events[i] - events[j])); // Exponential decay
+      const timeDiff = (events[i].timestamp - events[j].timestamp) / 1000; 
+      if (timeDiff > 0) {
+        sum += Math.exp(-decay * timeDiff); 
+      }
     }
+
+    // Add base intensity and intensity from past events
     intensity.push(lambda + alpha * sum);
   }
 
