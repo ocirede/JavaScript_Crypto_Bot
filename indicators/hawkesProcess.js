@@ -1,4 +1,4 @@
-export function hawkesProcess(events, decay = 0.1, lambda = 0.1, alpha = 0.7) {
+export function hawkesProcess(events, decay = 0.5, lambda = 0.5, alpha = 0.7) {
   let intensity = [];
 
   // Iterate over events
