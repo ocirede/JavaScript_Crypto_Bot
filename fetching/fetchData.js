@@ -13,7 +13,7 @@ import { evaluation30mIndicators } from "../strategy_evaluation_trading/evaluati
 import { evaluation4hIndicators } from "../strategy_evaluation_trading/evaluation4hIndicators.js";
 
 const exchange = new ccxt.bingx({
-  timeout: 20000,
+  timeout: 50000,
   enableRateLimit: true,
 });
 
@@ -89,7 +89,6 @@ export async function fetchMarketData() {
     console.error("Error fetching market data:", error);
   }
 }
-
 
 // Helper to fetch 4month data on 30 minutes timeframe
 export async function fetchFullOHLCV(
@@ -319,10 +318,16 @@ export async function fetchDataForStrategy() {
 async function handleCcxtErrors(fn, retryCount = 3, delay = 1000) {
   for (let attempt = 1; attempt <= retryCount; attempt++) {
     try {
-      return await fn(); // Execute the function
+      return await fn();
     } catch (error) {
-      if (error instanceof ccxt.NetworkError) {
+      if (error instanceof ccxt.RequestTimeout) {
+        console.error(
+          `Request Timeout on attempt ${attempt}: ${error.message}`
+        );
+      } else if (error instanceof ccxt.NetworkError) {
         console.error(`Network Error on attempt ${attempt}: ${error.message}`);
+      } else if (error instanceof ccxt.FetchError) {
+        console.error(`Fetching Error on attempt ${attempt}: ${error.message}`);
       } else if (error instanceof ccxt.ExchangeError) {
         console.error(`Exchange Error: ${error.message}`);
         if (error.message.includes("429")) {
@@ -339,7 +344,11 @@ async function handleCcxtErrors(fn, retryCount = 3, delay = 1000) {
       }
 
       if (attempt < retryCount) {
-        console.log(`Retrying in ${delay / 1000} seconds... (${retryCount - attempt} attempts left)`);
+        console.log(
+          `Retrying in ${delay / 1000} seconds... (${
+            retryCount - attempt
+          } attempts left)`
+        );
         await new Promise((resolve) => setTimeout(resolve, delay));
       } else {
         console.error("Max retries reached. Could not connect.");
@@ -348,4 +357,3 @@ async function handleCcxtErrors(fn, retryCount = 3, delay = 1000) {
     }
   }
 }
-

@@ -6,8 +6,12 @@ import {
 import { calculateBollingerBands } from "../indicators/bollingerBandsCalculation.js";
 import { kalmanFilter } from "../indicators/kalmanFilter.js";
 import { saveIndicatorsToCsv } from "../fetching/saveIndicatorsToCsv.js";
-import {linearRegressionSlope,fitTrendlinesHighLow,} from "../indicators/linearRegression.js";
-import {calculateATRWithHawkes} from "../indicators/calculateAtr.js";
+import {
+  linearRegressionSlope,
+  fitTrendlinesHighLow,
+} from "../indicators/linearRegression.js";
+import { calculateATRWithHawkes } from "../indicators/calculateAtr.js";
+import {calculateRSI} from "../indicators/relativeStrengthIndex.js";
 
 export function calculate5mIndicators(arrayOfArrays) {
   const symbol = "BTC-USDT";
@@ -29,23 +33,28 @@ export function calculate5mIndicators(arrayOfArrays) {
   const ema2 = calculateEMA(close, ema2Period);
   const ema3 = calculateEMA(close, ema3Period);
   const macd = calculateMACD(close);
-  const trend = calculateThirdInstance(
-    close,
-    fastLength3,
-    slowLength3,
-    100
-  );
+  const trend = calculateThirdInstance(close, fastLength3, slowLength3, 100);
   const bb = calculateBollingerBands(close);
   const smoothedClose = kalmanFilter(close);
   const smoothedHigh = kalmanFilter(high);
   const smoothedLow = kalmanFilter(low);
-  const regressionResult = linearRegressionSlope(smoothedClose);
-  const bestFitLine = regressionResult.bestFitLine;
-  const { supportLine, resistLine } = fitTrendlinesHighLow(smoothedHigh,smoothedLow,smoothedClose);
+  const { slope, bestFitLine } = linearRegressionSlope(smoothedClose);
+
+  const { supportLine, resistLine } = fitTrendlinesHighLow(
+    smoothedHigh,
+    smoothedLow,
+    smoothedClose
+  );
+
+  const {  atr, avgATR, smoothedAtr, adx } = calculateATRWithHawkes(
+    high,
+    low,
+    close,
+    basedPeriod
+  );
+
+  const rsi = calculateRSI(close);
   
-  const {atr, avgATR, smoothedATRSlope, adx  } = calculateATRWithHawkes(high, low, close, arrayOfArrays, basedPeriod);
-
-
   saveIndicatorsToCsv(
     timestamp,
     close,
@@ -60,8 +69,8 @@ export function calculate5mIndicators(arrayOfArrays) {
     supportLine,
     resistLine,
     atr,
-    smoothedATRSlope,
     adx,
+    rsi,
     filePathIndicators5m,
     true
   );
@@ -80,10 +89,12 @@ export function calculate5mIndicators(arrayOfArrays) {
     macdTrend: trend,
     regressionLine: bestFitLine,
     supportLine: supportLine,
+    slope: slope,
     resistanceLine: resistLine,
     atr: atr,
     avgAtr: avgATR,
     adx: adx,
-    atrSlope: smoothedATRSlope,
+    atrSlope: smoothedAtr,
+    rsi: rsi
   };
 }

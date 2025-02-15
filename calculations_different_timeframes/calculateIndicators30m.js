@@ -6,6 +6,7 @@ import { kalmanFilter } from "../indicators/kalmanFilter.js";
 import { saveIndicatorsToCsv } from "../fetching/saveIndicatorsToCsv.js";
 import {linearRegressionSlope,fitTrendlinesHighLow,} from "../indicators/linearRegression.js";
 import { calculateATRWithHawkes } from "../indicators/calculateAtr.js";
+import { calculateRSI } from "../indicators/relativeStrengthIndex.js";
 
 
 // Calculate technical indicators
@@ -49,7 +50,8 @@ export function calculate30mIndicators(arrayOfArrays) {
     smoothedClose
   );
   
-  const {atr, avgATR, smoothedATRSlope, adx } = calculateATRWithHawkes(high, low, close,  arrayOfArrays, basedPeriod);
+  const { atr, avgATR, smoothedAtr, adx } = calculateATRWithHawkes(high, low, close, basedPeriod);
+  const rsi = calculateRSI(close);
   
   saveIndicatorsToCsv(
     timestamp,
@@ -65,8 +67,8 @@ export function calculate30mIndicators(arrayOfArrays) {
     supportLine,
     resistLine,
     atr,
-    smoothedATRSlope,
     adx,
+    rsi,
     filePathIndicators30m,
     true
   );
@@ -88,5 +90,7 @@ export function calculate30mIndicators(arrayOfArrays) {
     resistanceLine: resistLine,
     atr: atr,
     avgATR: avgATR,
-    atrSlope: smoothedATRSlope,  };
+    atrSlope: smoothedAtr, 
+  rsi: rsi
+  };
 }

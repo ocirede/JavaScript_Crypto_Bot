@@ -148,13 +148,14 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         visible: false,
       };
 
-      // Define Kalman filter
-      const kalman = {
-        x: unpack(mergedData, "timestamp"),
-        y: unpack(mergedData, "kalman"),
+      // Define Atr
+      const atrSmoothedTrace = {
+        x: unpack(trimmedData, "timestamp"),
+        y: unpack(trimmedData, "smoothedAtr"),
         mode: "lines",
-        name: "Kalman",
-        line: { color: "yellow" },
+        name: "ATR-Smoothed",
+        line: { color: "blue", width: 2 },
+        yaxis: "y2",
         visible: false,
       };
 
@@ -224,8 +225,8 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         visible: false,
       };
 
-      const adx = unpack(trimmedData, "adx")
-      const AdxOverlayAtr= {
+      const adx = unpack(trimmedData, "adx");
+      const AdxOverlayAtr = {
         x: unpack(trimmedData, "timestamp"),
         y: adx,
         type: "scatter",
@@ -239,6 +240,16 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         visible: false,
       };
 
+       // Define rsi
+       const rsiTrace = {
+        x: unpack(trimmedData, "timestamp"),
+        y: unpack(trimmedData, "rsi"),
+        mode: "lines",
+        name: "RSI",
+        line: { color: "orange", width: 2 },
+        yaxis: "y2",
+        visible: false,
+      };
 
       // Empty trace for real-time price updates
       const realTimeTrace = {
@@ -267,7 +278,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         macdHistogramTrace,
         macdSignalTrace,
         macdTrace,
-        kalman,
+        atrSmoothedTrace,
         bestFitLine,
         support,
         resistance,
@@ -275,6 +286,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         trendOverlayTrace,
         atrTrace,
         AdxOverlayAtr,
+        rsiTrace,
         realTimeTrace,
       ];
 
@@ -377,7 +389,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
               },
 
               {
-                label: "Kalman",
+                label: "Atr-smoothed",
                 method: "restyle",
                 args: [{ visible: [true] }, [10]],
                 args2: [{ visible: [false] }, [10]],
@@ -426,12 +438,18 @@ export function fetchAndUpdateChart(timeframe = "30m") {
                 args: [{ visible: [true] }, [17]],
                 args2: [{ visible: [false] }, [17]],
               },
+              {
+                label: "rsi",
+                method: "restyle",
+                args: [{ visible: [true] }, [18]],
+                args2: [{ visible: [false] }, [18]],
+              },
 
               {
                 label: "Real-Time Price",
                 method: "restyle",
-                args: [{ visible: [true] }, [18]],
-                args2: [{ visible: [false] }, [18]],
+                args: [{ visible: [true] }, [19]],
+                args2: [{ visible: [false] }, [19]],
               },
 
               {
@@ -439,7 +457,10 @@ export function fetchAndUpdateChart(timeframe = "30m") {
                 method: "restyle",
                 args: [
                   { visible: [false] },
-                  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,18],
+                  [
+                    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+                    18,19
+                  ],
                 ],
               },
             ],
@@ -519,14 +540,14 @@ function setupRealTimeUpdates() {
     const chartElement = document.getElementById("myDiv");
     const chartData = chartElement?.data;
 
-    if (!chartData || !chartData[18]) {
+    if (!chartData || !chartData[19]) {
       console.error("Real-time trace data is not available!");
       isUpdating = false;
       return;
     }
 
     // Ensure the real-time price trace is visible
-    const isRealTimeVisible = chartData[18].visible !== false;
+    const isRealTimeVisible = chartData[19].visible !== false;
 
     // Only update the real-time price trace if it is visible
     if (isRealTimeVisible) {
@@ -542,7 +563,7 @@ function setupRealTimeUpdates() {
             y: [[latestUpdate.y]],
             text: [[latestUpdate.text]],
           },
-          [18],
+          [19],
           50,
           {
             // Pass layout parameters to ensure other traces stay visible

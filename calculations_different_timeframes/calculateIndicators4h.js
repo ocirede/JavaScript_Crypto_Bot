@@ -1,11 +1,18 @@
 import { calculateEMA } from "../indicators/emaCalculation.js";
-import { calculateThirdInstance, calculateMACD,} from "../indicators/macdCalculation.js";
+import {
+  calculateThirdInstance,
+  calculateMACD,
+} from "../indicators/macdCalculation.js";
 import { calculateBollingerBands } from "../indicators/bollingerBandsCalculation.js";
 import { kalmanFilter } from "../indicators/kalmanFilter.js";
 import { saveIndicatorsToCsv } from "../fetching/saveIndicatorsToCsv.js";
 import { calculateVWAPBands } from "../indicators/calculateVMAPBands.js";
-import {linearRegressionSlope,fitTrendlinesHighLow,} from "../indicators/linearRegression.js";
+import {
+  linearRegressionSlope,
+  fitTrendlinesHighLow,
+} from "../indicators/linearRegression.js";
 import { calculateATRWithHawkes } from "../indicators/calculateAtr.js";
+import { calculateRSI } from "../indicators/relativeStrengthIndex.js";
 
 export function calculate4hIndicators(arrayOfArrays) {
   const symbol = "BTC-USDT";
@@ -41,9 +48,14 @@ export function calculate4hIndicators(arrayOfArrays) {
     smoothedLow,
     smoothedClose
   );
- 
 
-  const {atr, avgATR, smoothedATRSlope, adx } = calculateATRWithHawkes(high, low, close, arrayOfArrays, basedPeriod);
+  const { atr, avgATR, smoothedAtr, adx } = calculateATRWithHawkes(
+    high,
+    low,
+    close,
+    basedPeriod
+  );
+  const rsi = calculateRSI(close);
 
   saveIndicatorsToCsv(
     timestamp,
@@ -59,8 +71,8 @@ export function calculate4hIndicators(arrayOfArrays) {
     supportLine,
     resistLine,
     atr,
-    smoothedATRSlope,
     adx,
+    rsi,
     filePathIndicators4h,
     true
   );
@@ -84,5 +96,7 @@ export function calculate4hIndicators(arrayOfArrays) {
     atr: atr,
     adx: adx,
     avgATR: avgATR,
-    atrSlope: smoothedATRSlope,  };
+    atrSlope: smoothedAtr,
+    rsi: rsi,
+  };
 }

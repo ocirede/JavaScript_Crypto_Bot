@@ -16,8 +16,8 @@ export function saveIndicatorsToCsv(
   supportLine,
   resistLine,
   atr,
-  smoothedATRSlope,
   adx,
+  rsi,
   filePathIndicators,
   resetFile = false
 ) {
@@ -51,7 +51,7 @@ export function saveIndicatorsToCsv(
     "resistance",
     "atr",
     "adx",
-    "atrSlope"
+    "rsi"
   
   ];
 
@@ -88,8 +88,9 @@ export function saveIndicatorsToCsv(
         support: supportLine?.[index] ?? null,
         resistance: resistLine?.[index] ?? null,
         atr: atr?.[index] ?? null,
-        atrSlope: smoothedATRSlope?.[index] ?? null,
-        adx: adx?.[index] ?? null
+        adx: adx?.[index] ?? null,
+        rsi: rsi?.[index] ?? null,
+
       };
     })
     .filter((entry) => entry !== null);
