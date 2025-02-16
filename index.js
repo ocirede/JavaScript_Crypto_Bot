@@ -4,7 +4,6 @@ import cors from "cors";
 import path from "path";
 import "dotenv/config";
 import { manualResetTrading } from "./fetching/fetchingPrivateApi.js";
-import { tradingStrategy } from "./strategy_evaluation_trading/strategy.js";
 import { fetchDataForStrategy } from "./fetching/fetchData.js";
 import {
   fetchTradingInfo,
@@ -136,7 +135,6 @@ async function main() {
 
     await fetchDataForStrategy();
     init();
-    tradingStrategy();
   } catch (error) {
     console.error("Error in main function:", error);
   }

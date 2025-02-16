@@ -240,13 +240,26 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         visible: false,
       };
 
-       // Define rsi
-       const rsiTrace = {
-        x: unpack(trimmedData, "timestamp"),
-        y: unpack(trimmedData, "rsi"),
+      // Filter the RSI values to keep only those >= 65 or <= 35
+      const filteredRSIData = unpack(trimmedData, "rsi")
+        .map((rsi, index) =>
+          rsi >= 65 || rsi <= 35
+            ? { x: unpack(trimmedData, "timestamp")[index], y: rsi }
+            : null
+        )
+        .filter(Boolean); 
+
+      // Separate x and y values
+      const filteredX = filteredRSIData.map((point) => point.x);
+      const filteredY = filteredRSIData.map((point) => point.y);
+
+      // Define RSI trace with filtered values
+      const rsiTrace = {
+        x: filteredX,
+        y: filteredY,
         mode: "lines",
         name: "RSI",
-        line: { color: "orange", width: 2 },
+        line: { color: "orange", width: 2, shape: "hv", smoothing: 1.5 }, 
         yaxis: "y2",
         visible: false,
       };
@@ -439,7 +452,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
                 args2: [{ visible: [false] }, [17]],
               },
               {
-                label: "rsi",
+                label: "Rsi",
                 method: "restyle",
                 args: [{ visible: [true] }, [18]],
                 args2: [{ visible: [false] }, [18]],
@@ -459,7 +472,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
                   { visible: [false] },
                   [
                     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
-                    18,19
+                    18, 19,
                   ],
                 ],
               },

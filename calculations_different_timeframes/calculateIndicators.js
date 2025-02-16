@@ -6,25 +6,22 @@ import {
 import { calculateBollingerBands } from "../indicators/bollingerBandsCalculation.js";
 import { kalmanFilter } from "../indicators/kalmanFilter.js";
 import { saveIndicatorsToCsv } from "../fetching/saveIndicatorsToCsv.js";
-import { calculateVWAPBands } from "../indicators/calculateVMAPBands.js";
 import {
   linearRegressionSlope,
   fitTrendlinesHighLow,
 } from "../indicators/linearRegression.js";
 import { calculateATRWithHawkes } from "../indicators/calculateAtr.js";
-import { calculateRSI } from "../indicators/relativeStrengthIndex.js";
+import {calculateRSI} from "../indicators/relativeStrengthIndex.js";
 
-export function calculate4hIndicators(arrayOfArrays) {
+export function calculateIndicators(arrayOfArrays, timeframe) {
+  
   const symbol = "BTC-USDT";
-  const timeframe4h = "4h";
-  const filePathIndicators4h = `indicators_${symbol}_${timeframe4h}.csv`;
-  const timestamp = arrayOfArrays.map((candle) => parseFloat(candle[0]));
-  const open = arrayOfArrays.map((candle) => parseFloat(candle[1]));
-  const high = arrayOfArrays.map((candle) => parseFloat(candle[2]));
-  const low = arrayOfArrays.map((candle) => parseFloat(candle[3]));
-  const close = arrayOfArrays.map((candle) => parseFloat(candle[4]));
-  const volume = arrayOfArrays.map((candle) => parseFloat(candle[5]));
-
+  const filePathIndicators = `indicators_${symbol}_${timeframe}.csv`;
+  const timestamp = arrayOfArrays.map((candle) => candle[0]);
+  const open = arrayOfArrays.map((candle) => candle[1]);
+  const high = arrayOfArrays.map((candle) => candle[2]);
+  const low = arrayOfArrays.map((candle) => candle[3]);
+  const close = arrayOfArrays.map((candle) => candle[4]);
   const ema1Period = 50;
   const ema2Period = 400;
   const ema3Period = 800;
@@ -41,22 +38,23 @@ export function calculate4hIndicators(arrayOfArrays) {
   const smoothedClose = kalmanFilter(close);
   const smoothedHigh = kalmanFilter(high);
   const smoothedLow = kalmanFilter(low);
-  const regressionResult = linearRegressionSlope(smoothedClose);
-  const bestFitLine = regressionResult.bestFitLine;
+  const { slope, bestFitLine } = linearRegressionSlope(smoothedClose);
+
   const { supportLine, resistLine } = fitTrendlinesHighLow(
     smoothedHigh,
     smoothedLow,
     smoothedClose
   );
 
-  const { atr, avgATR, smoothedAtr, adx } = calculateATRWithHawkes(
+  const {  atr, avgATR, smoothedAtr, adx } = calculateATRWithHawkes(
     high,
     low,
     close,
     basedPeriod
   );
-  const rsi = calculateRSI(close);
 
+  const rsi = calculateRSI(close);
+  
   saveIndicatorsToCsv(
     timestamp,
     close,
@@ -73,7 +71,7 @@ export function calculate4hIndicators(arrayOfArrays) {
     atr,
     adx,
     rsi,
-    filePathIndicators4h,
+    filePathIndicators,
     true
   );
 
@@ -91,12 +89,12 @@ export function calculate4hIndicators(arrayOfArrays) {
     macdTrend: trend,
     regressionLine: bestFitLine,
     supportLine: supportLine,
+    slope: slope,
     resistanceLine: resistLine,
     atr: atr,
-    atr: atr,
+    avgAtr: avgATR,
     adx: adx,
-    avgATR: avgATR,
     atrSlope: smoothedAtr,
-    rsi: rsi,
+    rsi: rsi
   };
 }

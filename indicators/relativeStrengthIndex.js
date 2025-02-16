@@ -39,7 +39,7 @@ export function calculateRSI(prices, period = 21) {
       const rsiValue = 100 - 100 / (1 + rs);
       rsi.push(rsiValue);
     } else {
-      rsi.push(100); // If avgLosses is 0, RSI is 100
+      rsi.push(100); 
     }
   }
 
