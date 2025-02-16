@@ -10,9 +10,9 @@ import {
   linearRegressionSlope,
   fitTrendlinesHighLow,
 } from "../indicators/linearRegression.js";
-import { calculateATRWithHawkes } from "../indicators/calculateAtr.js";
+import { calculateATR } from "../indicators/calculateAtr.js";
 import {calculateRSI} from "../indicators/relativeStrengthIndex.js";
-
+import {calculateADX} from "../indicators/calculateAdx.js"
 export function calculateIndicators(arrayOfArrays, timeframe) {
   
   const symbol = "BTC-USDT";
@@ -46,7 +46,7 @@ export function calculateIndicators(arrayOfArrays, timeframe) {
     smoothedClose
   );
 
-  const {  atr, avgATR, smoothedAtr, adx } = calculateATRWithHawkes(
+  const {  atr, avgATR, smoothedAtr  } = calculateATR(
     high,
     low,
     close,
@@ -54,6 +54,8 @@ export function calculateIndicators(arrayOfArrays, timeframe) {
   );
 
   const rsi = calculateRSI(close);
+  const {adx}= calculateADX(high, low, close, basedPeriod)
+
   
   saveIndicatorsToCsv(
     timestamp,

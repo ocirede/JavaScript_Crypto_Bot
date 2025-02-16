@@ -1,10 +1,12 @@
-export function calculateStandardDeviation(values) {
-  if (values.length < 2) return { mean: values[0] || 0, stdDev: 0, stdDevThreshold: values[0] || 0 };
-
-  const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
-  const stdDev = Math.sqrt(
-    values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (values.length - 1)
-  );
-  const stdDevThreshold = mean + 1.5 * stdDev; 
-  return { mean, stdDev, stdDevThreshold };
-}
+  // Helper function to calculate Standard Deviation
+  export function calculateStandardDeviation(prices, period, sma) {
+    let stdDev = [];
+    for (let i = 0; i <= prices.length ; i++) {
+      const subset = prices.slice(i, i + period);
+      const mean = sma[i];
+      const variance =
+        subset.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / period;
+      stdDev.push(Math.sqrt(variance));
+    }
+    return stdDev;
+  }

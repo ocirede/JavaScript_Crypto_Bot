@@ -1,32 +1,8 @@
-export function calculateBollingerBands(close, period = 20, multiplier = 2.5) {
-  
-  const reversedClose = close.slice().reverse()
-  
-  
-  // Helper function to calculate SMA
-  function calculateSMA(prices, period) {
-    let sma = [];
-    for (let i = 0; i <= prices.length ; i++) {
-      const sum = prices
-        .slice(i, i + period)
-        .reduce((acc, val) => acc + val, 0);
-      sma.push(sum / period);
-    }
-    return sma;
-  }
+import { calculateSMA } from "./smaCalculation.js";
+import { calculateStandardDeviation } from "./calculateStandardDeviation.js";
 
-  // Helper function to calculate Standard Deviation
-  function calculateStandardDeviation(prices, period, sma) {
-    let stdDev = [];
-    for (let i = 0; i <= prices.length ; i++) {
-      const subset = prices.slice(i, i + period);
-      const mean = sma[i];
-      const variance =
-        subset.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / period;
-      stdDev.push(Math.sqrt(variance));
-    }
-    return stdDev;
-  }
+export function calculateBollingerBands(close, period = 20, multiplier = 2.5) {
+  const reversedClose = close.slice().reverse();
 
   // Calculate SMA
   const sma = calculateSMA(reversedClose, period);
