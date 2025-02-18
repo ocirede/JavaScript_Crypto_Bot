@@ -15,7 +15,8 @@ export function calculateBollingerBands(close, period = 20, multiplier = 2.5) {
   const upper = sma.map((value, i) => value + multiplier * stdDev[i]);
   const lower = sma.map((value, i) => value - multiplier * stdDev[i]);
   // Calculate %B (Position of close price within the bands)
-  const pb = close.slice(period - 1).map((price, i) => {
+  const pb = close.map((price, i) => {
+    if (i < period - 1) return null;
     return (price - lower[i]) / (upper[i] - lower[i]);
   });
 
