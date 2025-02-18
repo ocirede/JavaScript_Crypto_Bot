@@ -4,7 +4,6 @@ import { Parser } from "@json2csv/plainjs";
 
 export function priceAnalysisToCsv(analysisResults, filePath, resetFile = false) {
   console.log("analysisResults function has been called");
-  console.log(analysisResults);
 
   // Ensure the directory exists
   const dir = path.dirname(filePath);

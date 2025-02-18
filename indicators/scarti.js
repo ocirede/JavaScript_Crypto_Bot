@@ -212,3 +212,5 @@ function detectConfirmedRsiSignals(
     const { lowestNearSupportLine, currentH, currentL } =
       findLowestNearSupportLine();
     const { lowestPrice, closestDistance, latestIndex } = lowestNearSupportLine;
+
+

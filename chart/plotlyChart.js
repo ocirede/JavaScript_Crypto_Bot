@@ -6,7 +6,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
     d3.csv(`/priceAnalysis${timeframe}.csv`),
   ])
     .then(([ohlcvRows, indicatorsRows, analysis]) => {
-      // Helper function to unpack columns
+      // Helper function to unpack columns and convert to numbers
       function unpack(rows, key) {
         return rows.map((row) => row[key]);
       }
@@ -43,8 +43,8 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         low: unpack(mergedData, "low"),
         close: unpack(mergedData, "close"),
         text: unpack(mergedData, "index"),
-        increasing: { line: { color: "white" } },
-        decreasing: { line: { color: "purple" } },
+        increasing: { line: { color: "green" } },
+        decreasing: { line: { color: "red" } },
         type: "candlestick",
         xaxis: "x",
         yaxis: "y",
@@ -261,26 +261,26 @@ export function fetchAndUpdateChart(timeframe = "30m") {
       // Mapping analysis data into annotations
       const annotations = analysis.map((result, index) => {
         return {
-          x: 0.1 + (index * 0.13), 
-          y: 0, 
-          xref: 'paper',
-          yref: 'paper',
-          text: `${result.Field}: ${result.Value}`, 
+          x: 0.1 + index * 0.12,
+          y: 0.02,
+          xref: "paper",
+          yref: "paper",
+          text: `${result.Field}: ${result.Value}`,
           showarrow: false,
           font: {
-            family: 'Arial, sans-serif',
+            family: "Arial, sans-serif",
             size: 18,
-            color: 'white',
+            color: "black",
           },
-          align: 'center',
-          bgcolor: 'black',
+          align: "center",
+          bgcolor: "yellow",
           borderpad: 10,
-          bordercolor: 'black',
+          bordercolor: "black",
           borderwidth: 1,
           opacity: 0.8,
         };
       });
-      
+
       // Define the data array
       const data = [
         candlestickTrace,
@@ -312,7 +312,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         showlegend: false,
         paper_bgcolor: "black",
         plot_bgcolor: "black",
-        margin: { l: 30, r: 40, t: 30, b: 40 },
+        margin: { l: 50, r: 50, t: 30, b: 40 },
         shapes: [
           {
             type: "rect",
@@ -359,20 +359,28 @@ export function fetchAndUpdateChart(timeframe = "30m") {
           title: "Price",
           side: "right",
           autorange: true,
+          showgrid: true,
+          zeroline: true,
+          visible: true,
         },
 
-        yaxis3: {
-          title: "MACD",
-          overlaying: "y",
-          side: "left",
-          autorange: true,
-        },
         yaxis2: {
           title: "ATR && ADX",
           overlaying: "y",
-          side: "right",
+          side: "left",
+          position: 0.02,
           showgrid: false,
-        },
+          zeroline: true,
+      },
+      
+      yaxis3: {
+          title: "MACD",
+          overlaying: "y",
+          side: "left",
+          position: 0.01, 
+          showgrid: false,
+          zeroline: true,
+      },
 
         annotations: annotations,
 
@@ -480,6 +488,8 @@ export function fetchAndUpdateChart(timeframe = "30m") {
             y: 1.15,
             xanchor: "left",
             yanchor: "top",
+            bgcolor: "yellow",
+            font: {color: "black"}
           },
         ],
       };
@@ -604,14 +614,14 @@ const buttons = document.querySelectorAll("button[id^='btn-']");
 
 // Function to reset all button colors
 function resetButtonColors() {
-  buttons.forEach((btn) => (btn.style.background = "turquoise"));
+  buttons.forEach((btn) => (btn.style.background = "white"));
 }
 
 // Add event listeners to each button
 buttons.forEach((button) => {
   button.addEventListener("click", (event) => {
     resetButtonColors();
-    event.target.style.background = "blue";
+    event.target.style.background = "yellow";
     fetchAndUpdateChart(event.target.innerText.split(" ")[0]);
   });
 });

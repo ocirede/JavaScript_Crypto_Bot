@@ -1,8 +1,9 @@
 "Field","Value"
-"trendSignal",-1
+"MicroTrend",-1
 "emaSignal",-1
 "macd",-1
 "signal",-1
 "histogram",-1
 "volume",-1
-"trend",-1
+"Macrotrend",-1
+"rsiDivergance",0
