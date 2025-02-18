@@ -11,10 +11,10 @@ import {
   fitTrendlinesHighLow,
 } from "../indicators/linearRegression.js";
 import { calculateATR } from "../indicators/calculateAtr.js";
-import {calculateRSI} from "../indicators/relativeStrengthIndex.js";
-import {calculateADX} from "../indicators/calculateAdx.js"
+import { calculateRSI } from "../indicators/relativeStrengthIndex.js";
+import { calculateADX } from "../indicators/calculateAdx.js";
+
 export function calculateIndicators(arrayOfArrays, timeframe) {
-  
   const symbol = "BTC-USDT";
   const filePathIndicators = `indicators_${symbol}_${timeframe}.csv`;
   const timestamp = arrayOfArrays.map((candle) => candle[0]);
@@ -22,6 +22,7 @@ export function calculateIndicators(arrayOfArrays, timeframe) {
   const high = arrayOfArrays.map((candle) => candle[2]);
   const low = arrayOfArrays.map((candle) => candle[3]);
   const close = arrayOfArrays.map((candle) => candle[4]);
+  const volume = arrayOfArrays.map((candle) => candle[5]);
   const ema1Period = 50;
   const ema2Period = 400;
   const ema3Period = 800;
@@ -46,7 +47,7 @@ export function calculateIndicators(arrayOfArrays, timeframe) {
     smoothedClose
   );
 
-  const {  atr, avgATR, smoothedAtr  } = calculateATR(
+  const { atr, avgATR, smoothedAtr } = calculateATR(
     high,
     low,
     close,
@@ -54,9 +55,8 @@ export function calculateIndicators(arrayOfArrays, timeframe) {
   );
 
   const rsi = calculateRSI(close);
-  const {adx}= calculateADX(high, low, close, basedPeriod)
+  const { adx } = calculateADX(high, low, close, basedPeriod);
 
-  
   saveIndicatorsToCsv(
     timestamp,
     close,
@@ -83,6 +83,7 @@ export function calculateIndicators(arrayOfArrays, timeframe) {
     close: close,
     high: high,
     low: low,
+    volume: volume,
     bollingherBands: bb,
     ema55: ema1,
     ema400: ema2,
@@ -97,6 +98,6 @@ export function calculateIndicators(arrayOfArrays, timeframe) {
     avgAtr: avgATR,
     adx: adx,
     atrSlope: smoothedAtr,
-    rsi: rsi
+    rsi: rsi,
   };
 }

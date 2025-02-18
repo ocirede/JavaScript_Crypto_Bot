@@ -32,6 +32,7 @@ export function saveIndicatorsToCsv(
 
   // CSV headers
   const fields = [
+    "index",
     "timestamp",
     "close",
     "bbMiddle",
@@ -51,7 +52,7 @@ export function saveIndicatorsToCsv(
     "resistance",
     "atr",
     "adx",
-    "rsi"
+    "rsi",
   
   ];
 
@@ -70,6 +71,7 @@ export function saveIndicatorsToCsv(
       }
 
       return {
+        index: index,
         timestamp: timestamp.toISOString(),
         close: close?.[index] ?? null,
         bbMiddle: bb.middle?.[index] ?? null,
@@ -90,7 +92,6 @@ export function saveIndicatorsToCsv(
         atr: atr?.[index] ?? null,
         adx: adx?.[index] ?? null,
         rsi: rsi?.[index] ?? null,
-
       };
     })
     .filter((entry) => entry !== null);

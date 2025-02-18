@@ -2,13 +2,12 @@ import { calculateSMA } from "./smaCalculation.js";
 import { calculateStandardDeviation } from "./calculateStandardDeviation.js";
 
 export function calculateBollingerBands(close, period = 20, multiplier = 2.5) {
-  const reversedClose = close.slice().reverse();
 
   // Calculate SMA
-  const sma = calculateSMA(reversedClose, period);
+  const sma = calculateSMA(close, period);
 
   // Calculate Standard Deviation
-  const stdDev = calculateStandardDeviation(reversedClose, period, sma);
+  const stdDev = calculateStandardDeviation(close, period, sma);
 
   // Calculate Bollinger Bands
   const middle = sma;
@@ -22,9 +21,9 @@ export function calculateBollingerBands(close, period = 20, multiplier = 2.5) {
 
   // Reverse the results to match the chronological order (oldest to newest)
   return {
-    middle: middle.reverse(),
-    upper: upper.reverse(),
-    lower: lower.reverse(),
-    pb: pb.reverse(),
+    middle: middle,
+    upper: upper,
+    lower: lower,
+    pb: pb
   };
 }

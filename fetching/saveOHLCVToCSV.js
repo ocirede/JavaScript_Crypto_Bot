@@ -12,7 +12,7 @@ export function saveOHLCVToCSV(ohlcv, filePath, resetFile = false) {
     console.log(`Created directory: ${dir}`);
   }
 
-  const fields = ["timestamp", "open", "high", "low", "close", "volume"];
+  const fields = ["index","timestamp", "open", "high", "low", "close", "volume"];
   const json2csvParser = new Parser({ fields, header: true });
 
   // Convert OHLCV data to an array of objects
@@ -25,6 +25,7 @@ export function saveOHLCVToCSV(ohlcv, filePath, resetFile = false) {
       }
 
       return {
+        index: index,
         timestamp: timestamp.toISOString(),
         open: candle[1],
         high: candle[2],

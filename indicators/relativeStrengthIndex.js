@@ -1,15 +1,10 @@
-import {calculateSMA} from "./smaCalculation.js"
+import { calculateSMA } from "./smaCalculation.js";
 
-export function calculateRSI(prices, period = 21) {
+export function calculateRSI(prices, period = 14) {
   if (prices.length < period) return [];
 
- 
-
   // Calculate daily price changes
-  let priceChanges = [];
-  for (let i = 1; i < prices.length; i++) {
-    priceChanges.push(prices[i] - prices[i - 1]);
-  }
+  let priceChanges = prices.slice(1).map((price, i) => price - prices[i]);
 
   // Calculate gains and losses
   let gains = priceChanges.map(change => (change > 0 ? change : 0));
@@ -20,21 +15,16 @@ export function calculateRSI(prices, period = 21) {
   let avgLosses = calculateSMA(losses, period);
 
   // Calculate RSI
-  const rsi = [];
-  for (let i = period - 1; i < prices.length; i++) {
+  let rsi = [];
+  for (let i = 0; i < avgGains.length; i++) {
     if (avgLosses[i] !== 0) {
       const rs = avgGains[i] / avgLosses[i];
-      const rsiValue = 100 - 100 / (1 + rs);
-      rsi.push(rsiValue);
+      rsi.push(100 - 100 / (1 + rs));
     } else {
-      rsi.push(100); 
+      rsi.push(100);
     }
   }
 
-  // Prepend `null` for the first `period - 1` periods
-  while (rsi.length < prices.length) {
-    rsi.unshift(null);
-  }
-
-  return rsi;
+  
+  return rsi; 
 }

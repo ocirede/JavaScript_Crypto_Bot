@@ -15,8 +15,9 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         const indicatorsMap = new Map(
           indicators.map((row) => [row.timestamp, row])
         );
-        return ohlcv.map((row) => ({
+        return ohlcv.map((row, index) => ({
           ...row,
+          index: index,
           ...indicatorsMap.get(row.timestamp),
         }));
       }
@@ -40,6 +41,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         high: unpack(mergedData, "high"),
         low: unpack(mergedData, "low"),
         close: unpack(mergedData, "close"),
+        text: unpack(mergedData, "index"),
         increasing: { line: { color: "white" } },
         decreasing: { line: { color: "purple" } },
         type: "candlestick",
@@ -148,17 +150,6 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         visible: false,
       };
 
-      // Define Atr
-      const atrSmoothedTrace = {
-        x: unpack(trimmedData, "timestamp"),
-        y: unpack(trimmedData, "smoothedAtr"),
-        mode: "lines",
-        name: "ATR-Smoothed",
-        line: { color: "blue", width: 2 },
-        yaxis: "y2",
-        visible: false,
-      };
-
       // Define Best trend fit line
       const bestFitLine = {
         x: unpack(mergedData, "timestamp"),
@@ -240,26 +231,13 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         visible: false,
       };
 
-      // Filter the RSI values to keep only those >= 65 or <= 35
-      const filteredRSIData = unpack(trimmedData, "rsi")
-        .map((rsi, index) =>
-          rsi >= 65 || rsi <= 35
-            ? { x: unpack(trimmedData, "timestamp")[index], y: rsi }
-            : null
-        )
-        .filter(Boolean); 
-
-      // Separate x and y values
-      const filteredX = filteredRSIData.map((point) => point.x);
-      const filteredY = filteredRSIData.map((point) => point.y);
-
       // Define RSI trace with filtered values
       const rsiTrace = {
-        x: filteredX,
-        y: filteredY,
+        x: unpack(trimmedData, "timestamp"),
+        y: unpack(trimmedData, "rsi"),
         mode: "lines",
         name: "RSI",
-        line: { color: "orange", width: 2, shape: "hv", smoothing: 1.5 }, 
+        line: { color: "orange", width: 2, shape: "hv", smoothing: 1.5 },
         yaxis: "y2",
         visible: false,
       };
@@ -291,7 +269,6 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         macdHistogramTrace,
         macdSignalTrace,
         macdTrace,
-        atrSmoothedTrace,
         bestFitLine,
         support,
         resistance,
@@ -402,67 +379,61 @@ export function fetchAndUpdateChart(timeframe = "30m") {
               },
 
               {
-                label: "Atr-smoothed",
+                label: "BestFitLine",
                 method: "restyle",
                 args: [{ visible: [true] }, [10]],
                 args2: [{ visible: [false] }, [10]],
               },
               {
-                label: "BestFitLine",
+                label: "Support",
                 method: "restyle",
                 args: [{ visible: [true] }, [11]],
                 args2: [{ visible: [false] }, [11]],
               },
               {
-                label: "Support",
+                label: "Resistance",
                 method: "restyle",
                 args: [{ visible: [true] }, [12]],
                 args2: [{ visible: [false] }, [12]],
               },
               {
-                label: "Resistance",
+                label: "Trend",
                 method: "restyle",
                 args: [{ visible: [true] }, [13]],
                 args2: [{ visible: [false] }, [13]],
               },
               {
-                label: "Trend",
+                label: "TrendLine",
                 method: "restyle",
                 args: [{ visible: [true] }, [14]],
                 args2: [{ visible: [false] }, [14]],
               },
+
               {
-                label: "TrendLine",
+                label: "Atr",
                 method: "restyle",
                 args: [{ visible: [true] }, [15]],
                 args2: [{ visible: [false] }, [15]],
               },
 
               {
-                label: "Atr",
+                label: "Adx",
                 method: "restyle",
                 args: [{ visible: [true] }, [16]],
                 args2: [{ visible: [false] }, [16]],
               },
-
-              {
-                label: "Adx",
-                method: "restyle",
-                args: [{ visible: [true] }, [17]],
-                args2: [{ visible: [false] }, [17]],
-              },
               {
                 label: "Rsi",
                 method: "restyle",
-                args: [{ visible: [true] }, [18]],
-                args2: [{ visible: [false] }, [18]],
+                args: [{ visible: [true] }, [17]],
+                args2: [{ visible: [false] }, [17]],
               },
 
               {
                 label: "Real-Time Price",
                 method: "restyle",
-                args: [{ visible: [true] }, [19]],
-                args2: [{ visible: [false] }, [19]],
+                args: [{ visible: [true] }, [18]],
+                args2: [{ visible: [false] }, [18]],
               },
 
               {
@@ -472,7 +443,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
                   { visible: [false] },
                   [
                     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
-                    18, 19,
+                    18,
                   ],
                 ],
               },
@@ -553,14 +524,14 @@ function setupRealTimeUpdates() {
     const chartElement = document.getElementById("myDiv");
     const chartData = chartElement?.data;
 
-    if (!chartData || !chartData[19]) {
+    if (!chartData || !chartData[18]) {
       console.error("Real-time trace data is not available!");
       isUpdating = false;
       return;
     }
 
     // Ensure the real-time price trace is visible
-    const isRealTimeVisible = chartData[19].visible !== false;
+    const isRealTimeVisible = chartData[18].visible !== false;
 
     // Only update the real-time price trace if it is visible
     if (isRealTimeVisible) {
@@ -576,7 +547,7 @@ function setupRealTimeUpdates() {
             y: [[latestUpdate.y]],
             text: [[latestUpdate.text]],
           },
-          [19],
+          [18],
           50,
           {
             // Pass layout parameters to ensure other traces stay visible
