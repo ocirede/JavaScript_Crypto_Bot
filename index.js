@@ -63,6 +63,25 @@ async function main() {
       });
     });
 
+    app.get("/priceAnalysis:timeframe.csv", (req, res) => {
+      const { timeframe } = req.params;
+
+      if (!timeframe.match(/^\d+[mh]$/)) {
+        return res.status(400).send("Invalid timeframe format.");
+      }
+      const filePath = path.join(
+        __dirname,
+        `priceAnalysis${timeframe}.csv`
+      );
+      console.log(`Attempting to send file from: ${filePath}`);
+      res.sendFile(filePath, (err) => {
+        if (err) {
+          console.error(`Error sending file: ${filePath}`, err);
+          res.status(404).send("File not found.");
+        }
+      });
+    });
+
     //Endpoint to get trading info
     app.get("/trading-info", async (req, res) => {
       try {

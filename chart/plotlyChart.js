@@ -3,8 +3,9 @@ export function fetchAndUpdateChart(timeframe = "30m") {
   Promise.all([
     d3.csv(`/ohlcv_BTC-USDT_${timeframe}.csv`),
     d3.csv(`/indicators_BTC-USDT_${timeframe}.csv`),
+    d3.csv(`/priceAnalysis${timeframe}.csv`),
   ])
-    .then(([ohlcvRows, indicatorsRows]) => {
+    .then(([ohlcvRows, indicatorsRows, analysis]) => {
       // Helper function to unpack columns
       function unpack(rows, key) {
         return rows.map((row) => row[key]);
@@ -257,6 +258,29 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         visible: false,
       };
 
+      // Mapping analysis data into annotations
+      const annotations = analysis.map((result, index) => {
+        return {
+          x: 0.1 + (index * 0.13), 
+          y: 0, 
+          xref: 'paper',
+          yref: 'paper',
+          text: `${result.Field}: ${result.Value}`, 
+          showarrow: false,
+          font: {
+            family: 'Arial, sans-serif',
+            size: 18,
+            color: 'white',
+          },
+          align: 'center',
+          bgcolor: 'black',
+          borderpad: 10,
+          bordercolor: 'black',
+          borderwidth: 1,
+          opacity: 0.8,
+        };
+      });
+      
       // Define the data array
       const data = [
         candlestickTrace,
@@ -349,6 +373,8 @@ export function fetchAndUpdateChart(timeframe = "30m") {
           side: "right",
           showgrid: false,
         },
+
+        annotations: annotations,
 
         updatemenus: [
           {
