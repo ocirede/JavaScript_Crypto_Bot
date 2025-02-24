@@ -1,75 +1,83 @@
 export function calculateADX(highs, lows, closes, period) {
-  let plusDM = [];
-  let minusDM = [];
-  let tr = [];
-  let smoothedPlusDM = [];
-  let smoothedMinusDM = [];
-  let smoothedTR = [];
-  let plusDI = [];
-  let minusDI = [];
-  let dx = [];
-  let adx = new Array(period - 1).fill(null); // Ensure correct null padding
+    // Check if there is enough data to calculate ADX
+    if (highs.length < period || lows.length < period || closes.length < period) {
+        console.error("Not enough data to calculate ADX");
+        return { adx: new Array(highs.length).fill(null) };
+    }
 
-  for (let i = 1; i < highs.length; i++) {
-      let upMove = highs[i] - highs[i - 1];
-      let downMove = lows[i - 1] - lows[i];
+    let plusDM = new Array(highs.length).fill(0);
+    let minusDM = new Array(lows.length).fill(0);
+    let tr = new Array(highs.length).fill(0);
+    let smoothedPlusDM = [];
+    let smoothedMinusDM = [];
+    let smoothedTR = [];
+    let plusDI = [];
+    let minusDI = [];
+    let dx = [];
+    let adx = new Array(highs.length).fill(null); 
 
-      plusDM.push(upMove > downMove && upMove > 0 ? upMove : 0);
-      minusDM.push(downMove > upMove && downMove > 0 ? downMove : 0);
+    // Calculate True Range and Directional Movements
+    for (let i = 1; i < highs.length; i++) {
+        let upMove = highs[i] - highs[i - 1];
+        let downMove = lows[i - 1] - lows[i];
 
-      let highLow = highs[i] - lows[i];
-      let highClose = Math.abs(highs[i] - closes[i - 1]);
-      let lowClose = Math.abs(lows[i] - closes[i - 1]);
+        plusDM[i] = upMove > downMove && upMove > 0 ? upMove : 0;
+        minusDM[i] = downMove > upMove && downMove > 0 ? downMove : 0;
 
-      tr.push(Math.max(highLow, highClose, lowClose));
-  }
+        let highLow = highs[i] - lows[i];
+        let highClose = Math.abs(highs[i] - closes[i - 1]);
+        let lowClose = Math.abs(lows[i] - closes[i - 1]);
 
-  if (tr.length < period) {
-      console.error("Not enough data to calculate ADX");
-      return { adx: [] };
-  }
+        tr[i] = Math.max(highLow, highClose, lowClose);
+    }
 
-  let sumTR = tr.slice(0, period).reduce((a, b) => a + b, 0);
-  let sumPlusDM = plusDM.slice(0, period).reduce((a, b) => a + b, 0);
-  let sumMinusDM = minusDM.slice(0, period).reduce((a, b) => a + b, 0);
+    // Calculate initial smoothed values
+    let sumTR = tr.slice(0, period).reduce((a, b) => a + b, 0);
+    let sumPlusDM = plusDM.slice(0, period).reduce((a, b) => a + b, 0);
+    let sumMinusDM = minusDM.slice(0, period).reduce((a, b) => a + b, 0);
 
-  smoothedTR.push(sumTR);
-  smoothedPlusDM.push(sumPlusDM);
-  smoothedMinusDM.push(sumMinusDM);
+    smoothedTR.push(sumTR);
+    smoothedPlusDM.push(sumPlusDM);
+    smoothedMinusDM.push(sumMinusDM);
 
-  for (let i = period; i < tr.length; i++) {
-      let smoothedTRValue = smoothedTR[i - period] - smoothedTR[i - period] / period + tr[i];
-      let smoothedPlusDMValue = smoothedPlusDM[i - period] - smoothedPlusDM[i - period] / period + plusDM[i];
-      let smoothedMinusDMValue = smoothedMinusDM[i - period] - smoothedMinusDM[i - period] / period + minusDM[i];
+    // Smooth the True Range and Directional Movements
+    for (let i = period; i < tr.length; i++) {
+        let smoothedTRValue = (smoothedTR[i - period] * (period - 1) + tr[i]) / period;
+        let smoothedPlusDMValue = (smoothedPlusDM[i - period] * (period - 1) + plusDM[i]) / period;
+        let smoothedMinusDMValue = (smoothedMinusDM[i - period] * (period - 1) + minusDM[i]) / period;
 
-      smoothedTR.push(smoothedTRValue);
-      smoothedPlusDM.push(smoothedPlusDMValue);
-      smoothedMinusDM.push(smoothedMinusDMValue);
-  }
+        smoothedTR.push(smoothedTRValue);
+        smoothedPlusDM.push(smoothedPlusDMValue);
+        smoothedMinusDM.push(smoothedMinusDMValue);
+    }
 
-  for (let i = 0; i < smoothedTR.length; i++) {
-      let plusDIValue = (smoothedPlusDM[i] / smoothedTR[i]) * 100;
-      let minusDIValue = (smoothedMinusDM[i] / smoothedTR[i]) * 100;
+    // Calculate the Directional Indicators and DX
+    for (let i = 0; i < smoothedTR.length; i++) {
+        let plusDIValue = (smoothedPlusDM[i] / smoothedTR[i]) * 100;
+        let minusDIValue = (smoothedMinusDM[i] / smoothedTR[i]) * 100;
 
-      plusDI.push(plusDIValue);
-      minusDI.push(minusDIValue);
+        plusDI.push(plusDIValue);
+        minusDI.push(minusDIValue);
 
-      let dxValue = (Math.abs(plusDIValue - minusDIValue) / (plusDIValue + minusDIValue)) * 100;
-      dx.push(dxValue);
-  }
+        if (plusDIValue + minusDIValue !== 0) {
+            let dxValue = (Math.abs(plusDIValue - minusDIValue) / (plusDIValue + minusDIValue)) * 100;
+            dx.push(dxValue);
+        } else {
+            dx.push(0); 
+        }
+    }
 
-  let sumDX = dx.slice(0, period).reduce((a, b) => a + b, 0) / period;
-  adx.push(sumDX);
+    // Calculate the initial ADX value
+    if (dx.length >= period) {
+        let sumDX = dx.slice(0, period).reduce((a, b) => a + b, 0) / period;
+        adx[period - 1] = sumDX; // Set the first ADX value after the initial period
 
-  for (let i = period; i < dx.length; i++) {
-      let adxValue = (adx[i - period] * (period - 1) + dx[i]) / period;
-      adx.push(adxValue);
-  }
+        // Calculate subsequent ADX values
+        for (let i = period; i < dx.length; i++) {
+            let adxValue = (adx[i - 1] * (period - 1) + dx[i]) / period;
+            adx[i + period - 1] = adxValue; 
+        }
+    }
 
-  // Ensure correct length without doubling null values
-  while (adx.length < highs.length) {
-      adx.push(null);
-  }
-
-  return { adx };
+    return { adx }; 
 }

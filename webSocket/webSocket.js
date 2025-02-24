@@ -72,7 +72,14 @@ const CHANNEL = {
 
 function onOpen() {
   console.log("WebSocket connected");
-  socket.send(JSON.stringify(CHANNEL));
+
+  // Ensure socket is open before sending data
+  if (socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify(CHANNEL));
+  } else {
+    console.warn("WebSocket not open yet. Retrying in 100ms...");
+    setTimeout(onOpen, 100);
+  }
 }
 
 function onError(error) {

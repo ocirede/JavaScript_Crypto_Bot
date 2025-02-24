@@ -1,6 +1,5 @@
 
 // Helper function to calculate EMA
-
 export function calculateEMA(data, period) {
   const alpha = 2 / (period + 1);
   let ema = [];

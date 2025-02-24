@@ -34,6 +34,11 @@ export function fetchAndUpdateChart(timeframe = "30m") {
       // Format dates as ISO strings for Plotly
       const todayISO = today.toISOString().split("T")[0];
       const fourMonthsAgoISO = fourMonthsAgo.toISOString().split("T")[0];
+      // Define the period used for Bollinger Bands calculation
+      const bbPeriod = 20;
+
+      // Trim the merged data to exclude the first 'bbPeriod' entries
+      const trimmedData = mergedData.slice(bbPeriod);
 
       // Define the candlestick trace
       const candlestickTrace = {
@@ -42,7 +47,6 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         high: unpack(mergedData, "high"),
         low: unpack(mergedData, "low"),
         close: unpack(mergedData, "close"),
-        text: unpack(mergedData, "index"),
         increasing: { line: { color: "green" } },
         decreasing: { line: { color: "red" } },
         type: "candlestick",
@@ -52,11 +56,15 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         visible: true,
       };
 
-      // Define the period used for Bollinger Bands calculation
-      const bbPeriod = 20;
+      const rsiValues = unpack(mergedData, "rsi").map((rsi) => parseFloat(rsi));
+      const indices = unpack(mergedData, "index");
 
-      // Trim the merged data to exclude the first 'bbPeriod' entries
-      const trimmedData = mergedData.slice(bbPeriod);
+      candlestickTrace.text = rsiValues.map((rsi, i) => {
+        const formattedRsi = !isNaN(rsi) ? rsi.toFixed(2) : "N/A";
+        return `Index: ${indices[i]}, RSI: ${formattedRsi}`;
+      });
+
+      candlestickTrace.hoverinfo = "x+y+text";
 
       // Define the Bollinger Bands traces
       const bbMiddleTrace = {
@@ -92,7 +100,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         y: unpack(mergedData, "ema55"),
         mode: "lines",
         name: "EMA 55",
-        line: { color: " pink" },
+        line: { color: " violet" },
         visible: false,
       };
 
@@ -258,28 +266,33 @@ export function fetchAndUpdateChart(timeframe = "30m") {
         visible: false,
       };
 
-      // Mapping analysis data into annotations
-      const annotations = analysis.map((result, index) => {
-        return {
-          x: 0.1 + index * 0.12,
-          y: 0.02,
+      // Combine all analysis results into a single string with line breaks
+      const combinedText = analysis
+        .map((result) => `${result.Field}: ${result.Value}`)
+        .join("<br>");
+
+      // Single annotation for all text
+      const annotations = [
+        {
+          x: 0,
+          y: 1,
           xref: "paper",
           yref: "paper",
-          text: `${result.Field}: ${result.Value}`,
+          text: combinedText, // Use the combined text
           showarrow: false,
           font: {
             family: "Arial, sans-serif",
             size: 18,
             color: "black",
           },
-          align: "center",
+          align: "left",
           bgcolor: "yellow",
           borderpad: 10,
-          bordercolor: "black",
-          borderwidth: 1,
+          bordercolor: "white",
+          borderwidth: 2,
           opacity: 0.8,
-        };
-      });
+        },
+      ];
 
       // Define the data array
       const data = [
@@ -371,16 +384,16 @@ export function fetchAndUpdateChart(timeframe = "30m") {
           position: 0.02,
           showgrid: false,
           zeroline: true,
-      },
-      
-      yaxis3: {
+        },
+
+        yaxis3: {
           title: "MACD",
           overlaying: "y",
           side: "left",
-          position: 0.01, 
+          position: 0.01,
           showgrid: false,
           zeroline: true,
-      },
+        },
 
         annotations: annotations,
 
@@ -489,7 +502,7 @@ export function fetchAndUpdateChart(timeframe = "30m") {
             xanchor: "left",
             yanchor: "top",
             bgcolor: "yellow",
-            font: {color: "black"}
+            font: { color: "black" },
           },
         ],
       };

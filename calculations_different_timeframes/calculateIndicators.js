@@ -28,13 +28,13 @@ export function calculateIndicators(arrayOfArrays, timeframe) {
   const ema3Period = 800;
   const fastLength3 = 400;
   const slowLength3 = 800;
-  const basedPeriod = 14;
+  const basedPeriod = 21;
 
   const ema1 = calculateEMA(close, ema1Period);
   const ema2 = calculateEMA(close, ema2Period);
   const ema3 = calculateEMA(close, ema3Period);
   const macd = calculateMACD(close);
-  const trend = calculateThirdInstance(close, fastLength3, slowLength3, 100);
+  const {t3} = calculateThirdInstance(close, fastLength3, slowLength3);
   const bb = calculateBollingerBands(close);
   const smoothedClose = kalmanFilter(close);
   const smoothedHigh = kalmanFilter(high);
@@ -56,7 +56,6 @@ export function calculateIndicators(arrayOfArrays, timeframe) {
 
   const rsi = calculateRSI(close);
   const { adx } = calculateADX(high, low, close, basedPeriod);
-
   saveIndicatorsToCsv(
     timestamp,
     close,
@@ -65,7 +64,7 @@ export function calculateIndicators(arrayOfArrays, timeframe) {
     ema2,
     ema3,
     macd,
-    trend,
+    t3,
     smoothedClose,
     bestFitLine,
     supportLine,
@@ -89,7 +88,7 @@ export function calculateIndicators(arrayOfArrays, timeframe) {
     ema400: ema2,
     ema800: ema3,
     macd: macd,
-    macdTrend: trend,
+    macdTrend: t3,
     regressionLine: bestFitLine,
     supportLine: supportLine,
     slope: slope,

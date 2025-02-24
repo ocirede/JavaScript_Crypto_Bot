@@ -1,4 +1,3 @@
-import { init } from "./webSocket/webSocket.js";
 import express from "express";
 import cors from "cors";
 import path from "path";
@@ -10,6 +9,7 @@ import {
   fetchTradesHistory,
   fetchOpenTrades
 } from "./fetching/fetchingPrivateApi.js";
+import { init } from "./webSocket/webSocket.js";
 
 async function main() {
   console.log("Starting trading bot...");
@@ -154,6 +154,7 @@ async function main() {
 
     await fetchDataForStrategy();
     init();
+
   } catch (error) {
     console.error("Error in main function:", error);
   }

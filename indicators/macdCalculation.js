@@ -1,13 +1,13 @@
-// Import your EMA and Bollinger Bands functions
 import { calculateEMA } from "./emaCalculation.js";
 
 // MACD Calculation
 function calc_macd(close, fastLength, slowLength) {
   const fastMA = calculateEMA(close, fastLength);
   const slowMA = calculateEMA(close, slowLength);
-  // Calculate MACD values by subtracting slowMA from fastMA
+
   const macd = fastMA.map((value, index) => value - slowMA[index]);
-  return macd;
+
+  return { macd };
 }
 
 export function calculateThirdInstance(
@@ -16,30 +16,36 @@ export function calculateThirdInstance(
   slowLength3,
   sensitivity3 = 100
 ) {
-  // Check for valid data
   if (!Array.isArray(close) || close.length < 2) {
     console.error("Invalid close data:", close);
-    return { trendUp3: [], trendDown3: [] };
+    return [];
   }
   if (isNaN(sensitivity3)) {
     console.error("Invalid sensitivity3:", sensitivity3);
-    return { trendUp3: [], trendDown3: [] };
-  }
-  // Calculate the MACD for the entire close array
-  const macdCurrent = calc_macd(close, fastLength3, slowLength3);
-  // Initialize arrays for trendUp3 and trendDown3
-  const trend = [];
-  // Loop over the MACD values (start from the second value since we are comparing current and previous)
-  for (let i = 0; i < macdCurrent.length; i++) {
-    const macdPreviousValue = macdCurrent[i - 1];
-    const macdCurrentValue = macdCurrent[i];
-    // Calculate t3 (difference between current and previous MACD, then apply sensitivity)
-    const t3 = (macdCurrentValue - macdPreviousValue) * sensitivity3;
-
-    trend.push(t3);
+    return [];
   }
 
-  return trend;
+  const { macd } = calc_macd(close, fastLength3, slowLength3);
+  // Calculate differences for t3 values (using the same range for both current and previous)
+  const t3 = macd.map((value, i) => {
+    if (i === 0) return 0; // First value remains 0 (or handle as needed)
+    const diff = value - macd[i - 1];
+
+    return diff * sensitivity3;
+  });
+
+  // Implement trendUp1 and trendDown1 logic
+  const trendUp1 = t3.map((value) => (value >= 0 ? value : 0));
+  const trendDown1 = t3.map((value) => (value < 0 ? value : 0));
+
+  // Optional: Handle the last value to avoid extreme fluctuations
+  const lastValue = t3[t3.length - 1];
+  if (Math.abs(lastValue) > 100000) {
+    console.warn("Last value is extremely high, adjusting:", lastValue);
+    t3[t3.length - 1] = 0; // Adjust or set to a default value
+  }
+
+  return { t3, trendUp1, trendDown1 };
 }
 
 export function calculateMACD(close) {

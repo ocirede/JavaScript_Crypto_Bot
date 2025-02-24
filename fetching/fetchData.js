@@ -216,9 +216,9 @@ export function convertToArrayOfArrays(ohlcv, type) {
 // Main strategy evaluation and update market functions
 export async function fetchDataForStrategy() {
   const fetchIntervals = {
-    "4h": 10800000,
-    "30m": 1800000,
-    "5m": 300000,
+    "4h": 7200000,
+    "30m": 900000,
+    "5m": 150000,
   };
 
   async function evaluateStrategy(interval) {
