@@ -1,9 +1,9 @@
 import fs from "fs";
 import csv from "csv-parser";
 
-export function loadHistoricalData(filePath, filePath4h, filePath5m) {
+export async function loadHistoricalData(filePath, filePath4h, filePath15m) {
   const loadFile = (filePath) => {
-    return new Promise((resolve, reject) => {
+    return  new Promise((resolve, reject) => {
       const data = [];
       console.log("Loading historical data from:", filePath);
 
@@ -71,8 +71,8 @@ export function loadHistoricalData(filePath, filePath4h, filePath5m) {
   };
 
   // Load all files in parallel and return the aggregated result
-  return Promise.all([loadFile(filePath), loadFile(filePath4h), loadFile(filePath5m)])
-    .then(([data, data4h, data5m]) => ({ data, data4h, data5m }))
+  return Promise.all([loadFile(filePath), loadFile(filePath4h), loadFile(filePath15m)])
+    .then(([data, data4h, data15m]) => ({ data, data4h, data15m }))
     .catch((error) => {
       console.error("Error loading historical data:", error);
       throw error;

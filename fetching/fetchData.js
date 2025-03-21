@@ -8,7 +8,6 @@ import { orderBookAveragePrice } from "../indicators/orderBookAveragePrice.js";
 import { calculateIndicators } from "../calculations_different_timeframes/calculateIndicators.js";
 import { evaluationIndicators } from "../strategy_evaluation_trading/evaluationIndicators.js";
 
-
 const exchange = new ccxt.bingx({
   timeout: 50000,
   enableRateLimit: true,
@@ -17,20 +16,19 @@ const exchange = new ccxt.bingx({
 const symbol = "BTC-USDT";
 const timeframe4h = "4h";
 const timeframe30m = "30m";
-const timeframe5m = "5m";
+const timeframe15m = "15m";
 const limit = 1000;
 const now = new Date();
 const monthsAgo = new Date(now.getTime());
 monthsAgo.setMonth(now.getMonth() - 4);
-
 const daysAgo = new Date(now.getTime());
 daysAgo.setDate(now.getDate() - 15);
 const since = exchange.parse8601(monthsAgo.toISOString());
-const since5m = exchange.parse8601(daysAgo.toISOString());
+const since15m = exchange.parse8601(daysAgo.toISOString());
 
 const filePath4h = `ohlcv_${symbol}_${timeframe4h}.csv`;
 const filePath30m = `ohlcv_${symbol}_${timeframe30m}.csv`;
-const filePath5m = `ohlcv_${symbol}_${timeframe5m}.csv`;
+const filePath15m = `ohlcv_${symbol}_${timeframe15m}.csv`;
 
 let cachedData = {
   processedData: null,
@@ -54,7 +52,7 @@ export async function fetchMarketData() {
     console.log("Fetching market data...");
 
     // Fetch all OHLCV data in parallel
-    const [ohlcv, fourHoursOhlcv, fiveMinuteOhlcv] = await Promise.all([
+    const [ohlcv, fourHoursOhlcv, fifteenMinuteOhlcv] = await Promise.all([
       handleCcxtErrors(() =>
         fetchFullOHLCV(exchange, symbol, timeframe30m, since, limit)
       ),
@@ -62,12 +60,12 @@ export async function fetchMarketData() {
         fetchFullOHLCV(exchange, symbol, timeframe4h, since, limit)
       ),
       handleCcxtErrors(() =>
-        fetchFullOHLCV(exchange, symbol, timeframe5m, since5m, limit)
+        fetchFullOHLCV(exchange, symbol, timeframe15m, since15m, limit)
       ),
     ]);
 
     // Check if any data is missing
-    if (!ohlcv || !fourHoursOhlcv || !fiveMinuteOhlcv) {
+    if (!ohlcv || !fourHoursOhlcv || !fifteenMinuteOhlcv) {
       console.log("No new data available from the exchange.");
       return null;
     }
@@ -78,17 +76,17 @@ export async function fetchMarketData() {
     [
       { data: ohlcv, path: filePath30m },
       { data: fourHoursOhlcv, path: filePath4h },
-      { data: fiveMinuteOhlcv, path: filePath5m },
+      { data: fifteenMinuteOhlcv, path: filePath15m },
     ].forEach(({ data, path }) => saveOHLCVToCSV(data, path, true));
 
     console.log("Market data fetched and saved to CSV.");
-    return { ohlcv, fourHoursOhlcv, fiveMinuteOhlcv };
+    return { ohlcv, fourHoursOhlcv, fifteenMinuteOhlcv };
   } catch (error) {
     console.error("Error fetching market data:", error);
   }
 }
 
-// Helper to fetch 4month data on 30 minutes timeframe
+// Helper to fetch 4month data
 export async function fetchFullOHLCV(
   exchange,
   symbol,
@@ -151,44 +149,43 @@ export async function loadHistoricalDataForStrategy() {
     if (
       !fs.existsSync(filePath30m) ||
       !fs.existsSync(filePath4h) ||
-      !fs.existsSync(filePath5m)
+      !fs.existsSync(filePath15m)
     ) {
       console.warn("One or more CSV files not found.");
-      return { processedData: [], processedData4h: [], processedData5m: [] };
+      return { processedData: [], processedData4h: [], processedData15m: [] };
     }
 
     // Destructure directly from function call
-    const { data, data4h, data5m } = await loadHistoricalData(
+    const { data, data4h, data15m } = await loadHistoricalData(
       filePath30m,
       filePath4h,
-      filePath5m
+      filePath15m
     );
 
     // Process all data with a single function call
     const processedData = processMultipleTimeframes([
       { data: data, type: "30m" },
       { data: data4h, type: "4h" },
-      { data: data5m, type: "5m" },
+      { data: data15m, type: "15m" },
     ]);
 
-     // Cache the processed data
-     cachedData = {
+    // Cache the processed data
+    cachedData = {
       processedData: processedData["30m"],
       processedData4h: processedData["4h"],
-      processedData5m: processedData["5m"],
+      processedData15m: processedData["15m"],
       lastLoaded: Date.now(),
     };
-    
 
     return cachedData;
   } catch (error) {
     console.error("Error loading historical data:", error);
-    return { processedData: [], processedData4h: [], processedData5m: [] };
+    return { processedData: [], processedData4h: [], processedData15m: [] };
   }
 }
 
 // Helper function to process data for multiple timeframes
- function processMultipleTimeframes(timeframes) {
+function processMultipleTimeframes(timeframes) {
   const processedData = {};
 
   timeframes.forEach(({ data, type }) => {
@@ -210,7 +207,6 @@ export function convertToArrayOfArrays(ohlcv, type) {
   ]);
 
   const indicators = calculateIndicators(arrayOfArrays, type);
-
   return { ...indicators };
 }
 // Main strategy evaluation and update market functions
@@ -218,7 +214,7 @@ export async function fetchDataForStrategy() {
   const fetchIntervals = {
     "4h": 7200000,
     "30m": 900000,
-    "5m": 150000,
+    "15m": 150000,
   };
 
   async function evaluateStrategy(interval) {
@@ -231,14 +227,14 @@ export async function fetchDataForStrategy() {
 
     try {
       console.log(`Fetching cached data for ${interval} strategy...`);
-      const { processedData, processedData4h, processedData5m } =
+      const { processedData, processedData4h, processedData15m } =
         await loadHistoricalDataForStrategy();
 
       // Map timeframes to the corresponding processed data
       const dataMap = {
         "4h": processedData4h,
         "30m": processedData,
-        "5m": processedData5m,
+        "15m": processedData15m,
       };
 
       console.log(`Running ${interval} strategy evaluation...`);
@@ -253,13 +249,13 @@ export async function fetchDataForStrategy() {
   async function runMarketUpdate(interval) {
     try {
       console.log("Updating market data...");
-      const { ohlcv, fourHoursOhlcv, fiveMinuteOhlcv } =
+      const { ohlcv, fourHoursOhlcv, fifteenMinuteOhlcv } =
         await fetchMarketData();
 
       const dataMap = {
         "4h": fourHoursOhlcv,
         "30m": ohlcv,
-        "5m": fiveMinuteOhlcv,
+        "15m": fifteenMinuteOhlcv,
       };
 
       console.log(`Running ${interval} market update...`);
@@ -272,7 +268,7 @@ export async function fetchDataForStrategy() {
   }
 
   // Execute both functions for all timeframes
-  ["4h", "30m", "5m"].forEach((interval) => {
+  ["4h", "30m", "15m"].forEach((interval) => {
     evaluateStrategy(interval);
     runMarketUpdate(interval);
   });
