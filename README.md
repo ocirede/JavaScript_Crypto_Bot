@@ -1,11 +1,7 @@
 # JavaScript Crypto Bot
 
-<p>
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" width="50" />
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original.svg" width="50" />
-
-</p>
 ## 🚀 Overview
+
 This is an automated **JavaScript Crypto Trading Bot** designed to analyze market trends, execute trades, and optimize profit strategies. The bot integrates various indicators such as **MACD, EMA, Bollinger Bands, VWAP, ATR, and ADX** to enhance decision-making.
 
 ## ✨ Features
