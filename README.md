@@ -13,8 +13,6 @@ This is an automated **JavaScript Crypto Trading Bot** designed to analyze marke
 - 🔄 **Supports multiple timeframes** with custom strategies
 - 📊 **Technical indicators:** MACD, EMA, Bollinger Bands, VWAP, ATR, ADX
 - 🔍 **Trend analysis** using best-fit lines and support/resistance levels
-- 📡 **Machine learning-based pattern detection** for reversals (WIP)
-- ✅ **Custom risk management rules**
 - 📂 **Saves historical OHLCV data** for analysis
 
 ## 📦 Installation
